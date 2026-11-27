@@ -22,6 +22,7 @@
             <td class="right"><%= stat[:count] || 0 %></td>
             <td class="right"><%= days(stat[:remaining] || 0) %></td>
             <td class="right nowrap">
+              <% unless type.rule? %><%= link_to "Cargar", new_grant_batch_path(leave_type_id: type.id), class: "btn btn-sm" %><% end %>
               <%= link_to "Editar", edit_leave_type_path(type), class: "btn btn-sm btn-ghost" %>
             </td>
           </tr>

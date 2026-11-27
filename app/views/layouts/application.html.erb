@@ -40,6 +40,7 @@
           <div class="nav-section">RRHH</div>
           <%= nav_link "Colaboradores", employees_path, icon: "👥", active: controller_name.in?(%w[employees leave_periods adjustments]) %>
           <%= nav_link "Tipos de días", leave_types_path, icon: "🏷️", active: controller_name == "leave_types" %>
+          <%= nav_link "Cargas", grant_batches_path, icon: "➕", active: controller_name == "grant_batches" %>
         <% end %>
         <% if current_actor.hr? || current_actor.manager? %>
           <div class="nav-section">Jefatura</div>

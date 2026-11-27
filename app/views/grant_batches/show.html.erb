@@ -1,0 +1,25 @@
+<% content_for :title, "Carga ##{@batch.id}" %>
+<div class="page-head">
+  <div>
+    <h1>Carga #<%= @batch.id %> · <%= @batch.leave_type.name %></h1>
+    <p><%= days(@batch.days) %> por persona · <%= fdate(@batch.granted_on) %> · por <%= @batch.created_by.name %> · <%= @batch.leave_type.expiration_description %></p>
+  </div>
+  <%= link_to "Volver", grant_batches_path, class: "btn btn-ghost" %>
+</div>
+<div class="callout"><strong>Motivo:</strong> <%= @batch.reason %></div>
+<div class="panel" style="padding: 8px 20px">
+  <table class="list-table">
+    <thead><tr><th>Colaborador</th><th class="right">Cargados</th><th class="right">Restantes</th><th>Vence</th><th>Clave idempotente</th></tr></thead>
+    <tbody>
+      <% @grants.each do |grant| %>
+        <tr>
+          <td><%= link_to grant.employee.name, employee_path(grant.employee), class: "person-name" %></td>
+          <td class="right"><%= days(grant.granted_days) %></td>
+          <td class="right"><%= days(grant.remaining_days) %></td>
+          <td><%= fdate(grant.expires_on) %></td>
+          <td class="mono"><%= grant.ledger_entries.first&.idempotency_key %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
