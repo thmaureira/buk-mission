@@ -1,0 +1,67 @@
+<% content_for :title, @import.filename %>
+<% ok = @rows.count { |r| r.status == "ok" } %>
+<% warn = @rows.count { |r| r.status == "warning" } %>
+<% err = @rows.count { |r| r.status == "error" } %>
+<div class="page-head">
+  <div>
+    <h1>Reporte de diferencias</h1>
+    <p><span class="mono"><%= @import.filename %></span> · corte <%= fdate(@import.cutoff_on) %> · cargado por <%= @import.uploaded_by.name %>
+      · <%= badge(@import.status_label, { "pending" => "warning", "approved" => "success", "rejected" => "muted" }[@import.status]) %></p>
+  </div>
+  <% if @import.pending? %>
+    <div class="form-actions">
+      <%= button_to "Rechazar", reject_opening_balance_import_path(@import), class: "btn btn-ghost", form: { class: "inline-form" } %>
+      <%= button_to "Aprobar e importar #{@import.importable_rows.size} filas", approve_opening_balance_import_path(@import), class: "btn", form: { class: "inline-form" }, disabled: @import.importable_rows.empty? %>
+    </div>
+  <% end %>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="stat-label">Filas leídas</div><div class="stat-value"><%= @rows.size %></div></div>
+  <div class="stat"><div class="stat-label">Cuadran</div><div class="stat-value" style="color: var(--success)"><%= ok %></div></div>
+  <div class="stat"><div class="stat-label">Con advertencia</div><div class="stat-value" style="color: var(--warning)"><%= warn %></div><div class="stat-sub">Se importan; revisar</div></div>
+  <div class="stat"><div class="stat-label">Con error</div><div class="stat-value" style="color: var(--danger)"><%= err %></div><div class="stat-sub">No se importan</div></div>
+  <div class="stat"><div class="stat-label">Días a importar</div><div class="stat-value"><%= days(@import.importable_rows.sum(&:computed_total), unit: false) %></div></div>
+</div>
+
+<% if @import.approved? %>
+  <div class="callout callout-success">
+    Aprobado por <%= @import.approved_by.name %> el <%= l(@import.approved_at) %>. Los movimientos de apertura tienen como origen
+    <span class="mono">excel:<%= @import.filename %>#fila N</span>.
+  </div>
+<% end %>
+
+<div class="panel" style="padding: 8px 20px">
+  <div class="table-wrap">
+    <table class="list-table">
+      <thead>
+        <tr><th>Fila</th><th>RUT</th><th>Colaborador</th><th class="right">Legales</th><th class="right">Progresivas</th><th class="right">Administrativos</th><th class="right">Total Excel</th><th class="right">Suma</th><th>Estado</th><th>Observaciones</th>
+          <% if @import.approved? %><th class="right">Saldo en libro</th><% end %></tr>
+      </thead>
+      <tbody>
+        <% @rows.each do |row| %>
+          <tr>
+            <td><%= row.row_number %></td>
+            <td class="nowrap"><%= row.rut %></td>
+            <td><%= row.employee ? link_to(row.employee.name, employee_path(row.employee)) : row.employee_name %></td>
+            <td class="right"><%= days(row.legal_days, unit: false) %></td>
+            <td class="right"><%= days(row.progressive_days, unit: false) %></td>
+            <td class="right"><%= days(row.administrative_days, unit: false) %></td>
+            <td class="right"><%= row.excel_total ? days(row.excel_total, unit: false) : "—" %></td>
+            <td class="right strong"><%= days(row.computed_total, unit: false) %></td>
+            <td><%= badge({ "ok" => "Cuadra", "warning" => "Advertencia", "error" => "Error" }[row.status], { "ok" => "success", "warning" => "warning", "error" => "danger" }[row.status]) %></td>
+            <td class="small"><% row.message_list.each do |m| %><div><%= m %></div><% end %></td>
+            <% if @import.approved? %>
+              <td class="right">
+                <% if row.status != "error" && row.employee %>
+                  <% opened = Vacations::Balance.new(row.employee, as_of: @import.cutoff_on).total %>
+                  <%= days(opened, unit: false) %> <%= opened == row.computed_total ? "✓" : "✗" %>
+                <% end %>
+              </td>
+            <% end %>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
