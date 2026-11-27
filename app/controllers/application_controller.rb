@@ -1,6 +1,10 @@
 class ApplicationController < ActionController::Base
   allow_browser versions: :modern
 
+  # Protección opcional para cuando la app se expone con ngrok: si están definidas
+  # BASIC_AUTH_USER y BASIC_AUTH_PASSWORD se exige HTTP Basic Auth en todas las páginas.
+  before_action :basic_auth_for_tunnel, if: -> { ENV["BASIC_AUTH_USER"].present? && ENV["BASIC_AUTH_PASSWORD"].present? }
+
   helper_method :current_actor, :can_view_employee?
 
   rescue_from Ledger::Error do |error|
@@ -8,6 +12,14 @@ class ApplicationController < ActionController::Base
   end
 
   private
+
+  def basic_auth_for_tunnel
+    http_basic_authenticate_or_request_with(
+      name: ENV.fetch("BASIC_AUTH_USER"),
+      password: ENV.fetch("BASIC_AUTH_PASSWORD"),
+      realm: "Gestor de Vacaciones POC"
+    )
+  end
 
   # POC: no hay login; el usuario actual se elige con "Ver como" (session[:actor_id]).
   def current_actor
