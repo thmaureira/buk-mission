@@ -1,0 +1,24 @@
+<% content_for :title, "Migración Excel" %>
+<div class="page-head">
+  <div><h1>Migración desde Excel</h1><p>Se carga el saldo inicial, se revisa el reporte de diferencias y RRHH aprueba. Cada lote apunta a su fila de origen.</p></div>
+  <%= link_to "Cargar archivo", new_opening_balance_import_path, class: "btn" %>
+</div>
+<div class="panel" style="padding: 8px 20px">
+  <table class="list-table">
+    <thead><tr><th>Archivo</th><th>Corte</th><th class="right">Filas</th><th class="right">Con error</th><th>Estado</th><th>Cargado por</th><th>Aprobado por</th></tr></thead>
+    <tbody>
+      <% @imports.each do |import| %>
+        <tr>
+          <td><%= link_to import.filename, opening_balance_import_path(import), class: "person-name" %></td>
+          <td><%= fdate(import.cutoff_on) %></td>
+          <td class="right"><%= import.rows.size %></td>
+          <td class="right"><%= import.error_rows.size %></td>
+          <td><%= badge(import.status_label, { "pending" => "warning", "approved" => "success", "rejected" => "muted" }[import.status]) %></td>
+          <td><%= import.uploaded_by.name %></td>
+          <td><%= import.approved_by&.name || "—" %></td>
+        </tr>
+      <% end %>
+      <% if @imports.empty? %><tr><td colspan="7" class="center muted">Sin migraciones</td></tr><% end %>
+    </tbody>
+  </table>
+</div>

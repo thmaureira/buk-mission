@@ -29,4 +29,12 @@ Rails.application.routes.draw do
   # Part 2: configurable types and grants (R10, R11)
   resources :leave_types, path: "tipos", only: [:index, :new, :create, :edit, :update]
   resources :grant_batches, path: "cargas", only: [:index, :new, :create, :show]
+
+  # Migration from Excel (R6)
+  resources :opening_balance_imports, path: "migracion", only: [:index, :new, :create, :show] do
+    member do
+      post :approve
+      post :reject
+    end
+  end
 end
