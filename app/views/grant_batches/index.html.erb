@@ -1,0 +1,26 @@
+<% content_for :title, "Cargas" %>
+<div class="page-head">
+  <div><h1>Cargas de días</h1><p>Cada carga queda registrada con su tipo, motivo, quién la hizo y a quiénes aplicó.</p></div>
+  <%= link_to "Nueva carga", new_grant_batch_path, class: "btn" %>
+</div>
+<div class="panel" style="padding: 8px 20px">
+  <div class="table-wrap">
+    <table class="list-table">
+      <thead><tr><th>#</th><th>Fecha</th><th>Tipo</th><th class="right">Días c/u</th><th>Destinatarios</th><th>Motivo</th><th>Cargado por</th></tr></thead>
+      <tbody>
+        <% @batches.each do |batch| %>
+          <tr>
+            <td><%= link_to "##{batch.id}", grant_batch_path(batch) %></td>
+            <td class="nowrap"><%= fdate(batch.granted_on) %></td>
+            <td><%= batch.leave_type.name %></td>
+            <td class="right"><%= days(batch.days) %></td>
+            <td class="small"><%= batch.leave_grants.size %> · <%= batch.target_description.to_s.truncate(60) %></td>
+            <td class="small"><%= batch.reason %></td>
+            <td><%= batch.created_by.name %></td>
+          </tr>
+        <% end %>
+        <% if @batches.empty? %><tr><td colspan="7" class="center muted">Sin cargas</td></tr><% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
