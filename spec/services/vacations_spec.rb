@@ -120,4 +120,35 @@ RSpec.describe "Gestor de vacaciones" do
       expect(LedgerEntry.where(actor: hr).pluck(:reason).uniq).to eq(["Evaluación Q1"])
     end
   end
+
+  describe "migración desde Excel (R6)" do
+    let!(:employee) { create(:employee, company: company, rut: "17.654.321-K", first_name: "Camila", last_name: "Fuentes", hire_date: Date.new(2021, 12, 1)) }
+    let(:csv) do
+      <<~CSV
+        rut,nombre,legales,progresivas,administrativos,total
+        17.654.321-K,Camila Fuentes,18,0,2,20
+        11.222.333-4,Roberto Díaz,15,0,0,15
+      CSV
+    end
+
+    it "genera el reporte de diferencias sin tocar el libro y, al aprobar, deja el origen de cada número" do
+      import = OpeningBalances::Parse.call(company: company, uploaded_by: hr, content: csv,
+                                           filename: "saldos.csv", cutoff_on: Date.new(2025, 12, 31))
+      expect(import.rows.map(&:status)).to eq(%w[ok error])
+      expect(LedgerEntry.count).to eq(0)
+
+      OpeningBalances::Approve.call(import: import, actor: hr)
+      expect(import.reload).to be_approved
+      expect(employee.reload.ledger_opened_on).to eq(Date.new(2025, 12, 31))
+      expect(Vacations::Balance.new(employee, as_of: Date.new(2025, 12, 31)).total).to eq(20)
+      expect(LedgerEntry.pluck(:source).uniq).to eq(["excel:saldos.csv#fila 2"])
+      expect { OpeningBalances::Approve.call(import: import, actor: hr) }.to raise_error(Ledger::Error)
+    end
+
+    it "rechaza el mismo archivo dos veces" do
+      args = { company: company, uploaded_by: hr, content: csv, filename: "saldos.csv", cutoff_on: Date.new(2025, 12, 31) }
+      OpeningBalances::Parse.call(**args)
+      expect { OpeningBalances::Parse.call(**args) }.to raise_error(Ledger::Error, /ya fue cargado/)
+    end
+  end
 end
