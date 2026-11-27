@@ -10,6 +10,19 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
+--
+-- Name: ledger_entries_append_only(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.ledger_entries_append_only() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  RAISE EXCEPTION 'ledger_entries es solo inserción: use un movimiento de reverso';
+END;
+$$;
+
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
@@ -266,6 +279,48 @@ ALTER SEQUENCE public.leave_types_id_seq OWNED BY public.leave_types.id;
 
 
 --
+-- Name: ledger_entries; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.ledger_entries (
+    id bigint NOT NULL,
+    leave_grant_id bigint NOT NULL,
+    leave_period_id bigint,
+    reverses_entry_id bigint,
+    actor_id bigint,
+    kind character varying NOT NULL,
+    days numeric(6,2) NOT NULL,
+    effective_on date NOT NULL,
+    reason text NOT NULL,
+    source character varying NOT NULL,
+    idempotency_key character varying NOT NULL,
+    created_at timestamp(6) without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT ledger_entries_days_non_zero CHECK ((days <> (0)::numeric)),
+    CONSTRAINT ledger_entries_kind_check CHECK (((kind)::text = ANY ((ARRAY['grant'::character varying, 'usage'::character varying, 'expiration'::character varying, 'adjustment'::character varying, 'reversal'::character varying])::text[]))),
+    CONSTRAINT ledger_entries_reversal_link CHECK ((((kind)::text = 'reversal'::text) = (reverses_entry_id IS NOT NULL)))
+);
+
+
+--
+-- Name: ledger_entries_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.ledger_entries_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: ledger_entries_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.ledger_entries_id_seq OWNED BY public.ledger_entries.id;
+
+
+--
 -- Name: schema_migrations; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -314,6 +369,13 @@ ALTER TABLE ONLY public.leave_periods ALTER COLUMN id SET DEFAULT nextval('publi
 --
 
 ALTER TABLE ONLY public.leave_types ALTER COLUMN id SET DEFAULT nextval('public.leave_types_id_seq'::regclass);
+
+
+--
+-- Name: ledger_entries id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.ledger_entries ALTER COLUMN id SET DEFAULT nextval('public.ledger_entries_id_seq'::regclass);
 
 
 --
@@ -370,6 +432,14 @@ ALTER TABLE ONLY public.leave_periods
 
 ALTER TABLE ONLY public.leave_types
     ADD CONSTRAINT leave_types_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: ledger_entries ledger_entries_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.ledger_entries
+    ADD CONSTRAINT ledger_entries_pkey PRIMARY KEY (id);
 
 
 --
@@ -486,6 +556,48 @@ CREATE UNIQUE INDEX index_leave_types_on_company_id_and_code ON public.leave_typ
 
 
 --
+-- Name: index_ledger_entries_on_actor_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_ledger_entries_on_actor_id ON public.ledger_entries USING btree (actor_id);
+
+
+--
+-- Name: index_ledger_entries_on_idempotency_key; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_ledger_entries_on_idempotency_key ON public.ledger_entries USING btree (idempotency_key);
+
+
+--
+-- Name: index_ledger_entries_on_leave_grant_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_ledger_entries_on_leave_grant_id ON public.ledger_entries USING btree (leave_grant_id);
+
+
+--
+-- Name: index_ledger_entries_on_leave_period_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_ledger_entries_on_leave_period_id ON public.ledger_entries USING btree (leave_period_id);
+
+
+--
+-- Name: index_ledger_entries_on_reverses_entry_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_ledger_entries_on_reverses_entry_id ON public.ledger_entries USING btree (reverses_entry_id) WHERE (reverses_entry_id IS NOT NULL);
+
+
+--
+-- Name: ledger_entries ledger_entries_no_update_delete; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER ledger_entries_no_update_delete BEFORE DELETE OR UPDATE ON public.ledger_entries FOR EACH ROW EXECUTE FUNCTION public.ledger_entries_append_only();
+
+
+--
 -- Name: employees fk_rails_0fe1519b79; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -534,6 +646,22 @@ ALTER TABLE ONLY public.leave_grants
 
 
 --
+-- Name: ledger_entries fk_rails_6048a9a2ae; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.ledger_entries
+    ADD CONSTRAINT fk_rails_6048a9a2ae FOREIGN KEY (leave_period_id) REFERENCES public.leave_periods(id);
+
+
+--
+-- Name: ledger_entries fk_rails_88500c2d56; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.ledger_entries
+    ADD CONSTRAINT fk_rails_88500c2d56 FOREIGN KEY (leave_grant_id) REFERENCES public.leave_grants(id);
+
+
+--
 -- Name: leave_periods fk_rails_8f6f730b5c; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -547,6 +675,14 @@ ALTER TABLE ONLY public.leave_periods
 
 ALTER TABLE ONLY public.grant_batches
     ADD CONSTRAINT fk_rails_b80b84412e FOREIGN KEY (created_by_id) REFERENCES public.employees(id);
+
+
+--
+-- Name: ledger_entries fk_rails_c6647df8e2; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.ledger_entries
+    ADD CONSTRAINT fk_rails_c6647df8e2 FOREIGN KEY (reverses_entry_id) REFERENCES public.ledger_entries(id);
 
 
 --
@@ -566,6 +702,14 @@ ALTER TABLE ONLY public.grant_batches
 
 
 --
+-- Name: ledger_entries fk_rails_e6ab26e796; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.ledger_entries
+    ADD CONSTRAINT fk_rails_e6ab26e796 FOREIGN KEY (actor_id) REFERENCES public.employees(id);
+
+
+--
 -- Name: leave_periods fk_rails_ef6e1fa0ca; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -580,6 +724,7 @@ ALTER TABLE ONLY public.leave_periods
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261126000004'),
 ('20261126000003'),
 ('20261126000002'),
 ('20261126000001');
