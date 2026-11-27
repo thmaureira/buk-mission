@@ -37,4 +37,8 @@ Rails.application.routes.draw do
       post :reject
     end
   end
+
+  # Procesos programados (R2, R3, R11): ejecución manual para demostrar idempotencia
+  get "procesos", to: "scheduled_jobs#index", as: :scheduled_jobs
+  post "procesos/:job", to: "scheduled_jobs#run", as: :run_scheduled_job
 end
