@@ -16,4 +16,9 @@ RSpec.describe "Ejemplo del enunciado" do
     expect(ninth.find_by(leave_type: types[:progressive]).granted_days).to eq(3)
   end
 
+  it "en un finiquito a 8 meses y 24 días del último aniversario se pagan 11 días proporcionales" do
+    result = Vacations::Settlement.call(employee: employee, termination_on: termination_on)
+    expect([result.months, result.days]).to eq([8, 24])
+    expect(result.proportional).to eq(11)
+  end
 end
