@@ -9,6 +9,13 @@
       <% end %>
       <div style="height: 22px"></div>
       <%= render "saldo_table", balance: @balance %>
+      <% if @balance.projected_grants.any? %>
+        <div class="callout" style="margin: 18px 0 0">
+          <strong>* Acumuladas incluye <%= days(@balance.projected_grants.sum(&:days)) %> proyectados</strong>
+          (<%= safe_join(@balance.projected_grants.map { |g| "#{g.reason} el #{fdate(g.date)}" }, "; ") %>).
+          Es un pronóstico: el proceso diario los carga en el libro el día del aniversario.
+        </div>
+      <% end %>
       <div class="callout" style="margin: 18px 0 0">
         <strong>Proporcional devengado: <%= days(@proportional, precision: 2) %></strong>
         desde el último aniversario (<%= fdate(@employee.last_anniversary_on(@as_of)) %>). No se puede pedir todavía:

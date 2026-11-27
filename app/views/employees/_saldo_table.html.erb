@@ -11,7 +11,7 @@
     <tbody>
       <% Vacations::Balance::ROWS.each do |bucket, label| %>
         <tr>
-          <td><%= label %></td>
+          <td><%= label %><%= " *" if bucket == :accrued && balance.projected_grants.any? %></td>
           <% balance.leave_types.each do |type| %><td><%= days(balance.cell(type, bucket).abs) %></td><% end %>
           <td><%= days(balance.row_total(bucket).abs) %></td>
         </tr>
