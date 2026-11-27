@@ -21,6 +21,8 @@ class EmployeesController < ApplicationController
     # R1: proporcional devengado desde el último aniversario (aún no cargado).
     @proportional = VacationRules::Registry.resolve(:proportional_days, on: @as_of)
                                            .days(employee: @employee, on: @as_of)
+    # Aniversarios entre hoy y la fecha consultada que el job todavía no carga en el libro.
+    @pending_grants = Vacations::AnniversaryGrants.pending(employee: @employee, as_of: @as_of)
     @periods = @employee.leave_periods.includes(:approver).chronological
     @grants = @employee.leave_grants.includes(:leave_type, :grant_batch, :ledger_entries)
                        .where("granted_on <= ?", @as_of).order(granted_on: :desc, id: :desc)

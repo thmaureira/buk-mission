@@ -9,6 +9,13 @@
       <% end %>
       <div style="height: 22px"></div>
       <%= render "saldo_table", balance: @balance %>
+      <% if @pending_grants.any? %>
+        <div class="callout" style="margin: 18px 0 0">
+          <strong>Por cargar al <%= fdate(@as_of) %>: <%= days(@pending_grants.sum(&:days)) %></strong>
+          (<%= safe_join(@pending_grants.map { |g| "#{g.reason} el #{fdate(g.date)}" }, "; ") %>).
+          El proceso diario los carga en el libro el día del aniversario; la tabla muestra solo lo ya cargado.
+        </div>
+      <% end %>
       <div class="callout" style="margin: 18px 0 0">
         <strong>Proporcional devengado: <%= days(@proportional, precision: 2) %></strong>
         desde el último aniversario (<%= fdate(@employee.last_anniversary_on(@as_of)) %>). No se puede pedir todavía:
