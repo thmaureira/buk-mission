@@ -1,0 +1,36 @@
+<% content_for :title, "Ajuste de saldo" %>
+<div class="page-head">
+  <div>
+    <h1>Ajuste de saldo</h1>
+    <p><%= link_to @employee.name, employee_path(@employee) %></p>
+  </div>
+</div>
+<div class="panel form-panel">
+  <div class="callout callout-warning">
+    Un ajuste queda en el libro con tu nombre, la fecha y el motivo. Positivo crea un lote nuevo;
+    negativo descuenta de los lotes de ese tipo. Es la única forma de adelantar días (saldo a favor).
+  </div>
+  <%= form_with url: employee_adjustments_path(@employee), method: :post do %>
+    <input type="hidden" name="token" value="<%= @token %>">
+    <div class="form-grid">
+      <div class="field">
+        <label for="leave_type_id">Tipo</label>
+        <select name="leave_type_id" id="leave_type_id">
+          <%= options_from_collection_for_select(@leave_types, :id, :name) %>
+        </select>
+      </div>
+      <div class="field">
+        <label for="days">Días (+ / −)</label>
+        <input type="number" step="0.5" id="days" name="days" required placeholder="Ej: 2 o -1,5">
+      </div>
+    </div>
+    <div class="field">
+      <label for="reason">Motivo</label>
+      <textarea id="reason" name="reason" rows="3" required placeholder="Ej: Corrección de días tomados en marzo según comprobante firmado"></textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn" type="submit">Registrar ajuste</button>
+      <%= link_to "Cancelar", employee_path(@employee), class: "btn btn-ghost" %>
+    </div>
+  <% end %>
+</div>
