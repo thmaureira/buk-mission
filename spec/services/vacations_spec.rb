@@ -71,4 +71,26 @@ RSpec.describe "Gestor de vacaciones" do
       expect_ledger_consistent(employee)
     end
   end
+
+  describe Vacations::ExpireDue do
+    let(:employee) { create(:employee, company: company, hire_date: Date.new(2020, 3, 2)) }
+
+    it "vence administrativos el 31/12 y deja el movimiento (R11)" do
+      grant!(employee, types[:administrative], 3, on: Date.new(2026, 1, 2))
+      expect(described_class.call(as_of: Date.new(2026, 12, 30))).to be_empty
+      described_class.call(as_of: Date.new(2026, 12, 31))
+      described_class.call(as_of: Date.new(2027, 1, 1)) # idempotent
+      expiration = LedgerEntry.where(kind: "expiration").sole
+      expect(expiration.days).to eq(-3)
+      expect(Vacations::Balance.new(employee, as_of: Date.new(2027, 1, 1)).row_total(:expired)).to eq(-3)
+    end
+
+    it "vence legales al acumularse un tercer período" do
+      Vacations::AnniversaryGrants.call(employee: employee, as_of: Date.new(2023, 3, 2)) # 3 lots: 2021, 2022, 2023
+      described_class.call(as_of: Date.new(2023, 3, 2))
+      balance = Vacations::Balance.new(employee, as_of: Date.new(2023, 3, 2))
+      expect(balance.available("vacation")).to eq(30) # at most two periods
+      expect(balance.row_total(:expired)).to eq(-15)
+    end
+  end
 end
