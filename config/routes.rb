@@ -13,6 +13,7 @@ Rails.application.routes.draw do
       get :settlement
     end
     resources :leave_periods, only: [:new, :create]
+    resources :adjustments, only: [:new, :create]
   end
   resources :leave_periods, only: [] do
     member { post :cancel }
