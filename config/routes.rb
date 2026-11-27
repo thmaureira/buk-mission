@@ -21,4 +21,8 @@ Rails.application.routes.draw do
   resources :ledger_entries, only: [] do
     member { post :reverse }
   end
+
+  # Colaborador y jefatura (R7, R8)
+  get "mi-saldo", to: "my_balances#show", as: :my_balance
+  get "equipo", to: "teams#show", as: :team
 end
