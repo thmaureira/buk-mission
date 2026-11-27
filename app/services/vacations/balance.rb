@@ -11,9 +11,12 @@ module Vacations
 
     attr_reader :employee, :as_of
 
-    def initialize(employee, as_of: Date.current)
+    # projected: also count anniversaries between today and `as_of` that the daily job
+    # has not granted yet, so a future date shows the forecast total.
+    def initialize(employee, as_of: Date.current, projected: false)
       @employee = employee
       @as_of = as_of
+      @projected = projected
     end
 
     def entries
@@ -25,14 +28,22 @@ module Vacations
                               .chronological.to_a
     end
 
+    def projected_grants
+      @projected_grants ||= @projected ? AnniversaryGrants.pending(employee: employee, as_of: as_of) : []
+    end
+
     def leave_types
-      @leave_types ||= entries.map { |e| e.leave_grant.leave_type }.uniq.sort_by { |t| [t.position, t.name] }
+      @leave_types ||= (entries.map { |e| e.leave_grant.leave_type } + projected_grants.map(&:leave_type))
+                       .uniq.sort_by { |t| [t.position, t.name] }
     end
 
     # { leave_type => { bucket => days } }
     def matrix
-      @matrix ||= entries.each_with_object(Hash.new { |h, k| h[k] = Hash.new(0) }) do |entry, acc|
-        acc[entry.leave_grant.leave_type][bucket_for(entry)] += entry.days
+      @matrix ||= begin
+        acc = Hash.new { |h, k| h[k] = Hash.new(0) }
+        entries.each { |entry| acc[entry.leave_grant.leave_type][bucket_for(entry)] += entry.days }
+        projected_grants.each { |grant| acc[grant.leave_type][:accrued] += grant.days }
+        acc
       end
     end
 

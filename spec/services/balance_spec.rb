@@ -25,4 +25,27 @@ RSpec.describe Vacations::Balance do
     expect(expired.cell(types[:legal], :expired)).to eq(-15)
     expect(expired.available("vacation")).to eq(0)
   end
+
+  context "con projected: true y un aniversario futuro que el job aún no carga" do
+    let(:anniversary) { Date.new(2027, 3, 2) }
+
+    before { travel_to Date.new(2026, 11, 27) }
+
+    it "suma los días del aniversario a las acumuladas para mostrar el total pronosticado" do
+      projected = described_class.new(employee, as_of: anniversary, projected: true)
+      expect(projected.projected_grants.sum(&:days)).to eq(15)
+      expect(projected.cell(types[:legal], :accrued)).to eq(30)
+      expect(projected.available("vacation")).to eq(30)
+
+      expect(balance(anniversary).available("vacation")).to eq(15)
+    end
+
+    it "no proyecta lo que el libro ya tiene" do
+      travel_to anniversary
+      Vacations::AnniversaryGrants.call(employee: employee, as_of: anniversary)
+      projected = described_class.new(employee, as_of: anniversary, projected: true)
+      expect(projected.projected_grants).to be_empty
+      expect(projected.available("vacation")).to eq(balance(anniversary).available("vacation"))
+    end
+  end
 end

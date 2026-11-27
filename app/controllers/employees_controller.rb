@@ -17,7 +17,8 @@ class EmployeesController < ApplicationController
   def show
     @employee = find_employee
     @as_of = parse_date(params[:as_of])
-    @balance = Vacations::Balance.new(@employee, as_of: @as_of)
+    # Projected: a future date includes the anniversaries the daily job has not granted yet.
+    @balance = Vacations::Balance.new(@employee, as_of: @as_of, projected: true)
     # R1: proportional days accrued since the last anniversary (not granted yet).
     @proportional = VacationRules::Registry.resolve(:proportional_days, on: @as_of)
                                            .days(employee: @employee, on: @as_of)

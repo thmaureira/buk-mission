@@ -106,6 +106,31 @@ RSpec.describe "Gestor de vacaciones" do
       expect(result.proportional).to eq(11)
       expect(result.total).to eq(26)
     end
+
+    context "cuando la fecha de término cae en un aniversario que el job aún no procesa" do
+      let(:employee) { create(:employee, company: company, hire_date: Date.new(2026, 3, 2)) }
+      let(:anniversary) { Date.new(2027, 3, 2) }
+
+      before { travel_to Date.new(2026, 11, 27) }
+
+      it "suma los días legales ganados ese día en vez de bajar a cero" do
+        day_before = described_class.call(employee: employee, termination_on: anniversary - 1)
+        expect(day_before.total).to eq(BigDecimal("14.88"))
+
+        result = described_class.call(employee: employee, termination_on: anniversary)
+        expect(result.proportional).to eq(0)
+        expect(result.pending_anniversary).to eq(15)
+        expect(result.total).to eq(15)
+      end
+
+      it "no cuenta doble cuando el job ya cargó el aniversario" do
+        travel_to anniversary
+        Vacations::AnniversaryGrants.call(employee: employee, as_of: anniversary)
+        result = described_class.call(employee: employee, termination_on: anniversary)
+        expect(result.pending_anniversary).to eq(0)
+        expect(result.total).to eq(15)
+      end
+    end
   end
 
   describe Vacations::BulkGrant do
