@@ -105,6 +105,84 @@ ALTER SEQUENCE public.employees_id_seq OWNED BY public.employees.id;
 
 
 --
+-- Name: grant_batches; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.grant_batches (
+    id bigint NOT NULL,
+    company_id bigint NOT NULL,
+    leave_type_id bigint NOT NULL,
+    created_by_id bigint NOT NULL,
+    days numeric(6,2) NOT NULL,
+    granted_on date NOT NULL,
+    reason text NOT NULL,
+    target_description character varying,
+    created_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: grant_batches_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.grant_batches_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: grant_batches_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.grant_batches_id_seq OWNED BY public.grant_batches.id;
+
+
+--
+-- Name: leave_types; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.leave_types (
+    id bigint NOT NULL,
+    company_id bigint NOT NULL,
+    name character varying NOT NULL,
+    code character varying NOT NULL,
+    pool character varying NOT NULL,
+    grant_mode character varying DEFAULT 'manual'::character varying NOT NULL,
+    expiration_policy character varying DEFAULT 'none'::character varying NOT NULL,
+    expiration_value character varying,
+    system boolean DEFAULT false NOT NULL,
+    active boolean DEFAULT true NOT NULL,
+    "position" integer DEFAULT 100 NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT leave_types_expiration_policy_check CHECK (((expiration_policy)::text = ANY ((ARRAY['none'::character varying, 'fixed_date'::character varying, 'relative'::character varying])::text[]))),
+    CONSTRAINT leave_types_grant_mode_check CHECK (((grant_mode)::text = ANY ((ARRAY['rule'::character varying, 'manual'::character varying])::text[])))
+);
+
+
+--
+-- Name: leave_types_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.leave_types_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: leave_types_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.leave_types_id_seq OWNED BY public.leave_types.id;
+
+
+--
 -- Name: schema_migrations; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -125,6 +203,20 @@ ALTER TABLE ONLY public.companies ALTER COLUMN id SET DEFAULT nextval('public.co
 --
 
 ALTER TABLE ONLY public.employees ALTER COLUMN id SET DEFAULT nextval('public.employees_id_seq'::regclass);
+
+
+--
+-- Name: grant_batches id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.grant_batches ALTER COLUMN id SET DEFAULT nextval('public.grant_batches_id_seq'::regclass);
+
+
+--
+-- Name: leave_types id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.leave_types ALTER COLUMN id SET DEFAULT nextval('public.leave_types_id_seq'::regclass);
 
 
 --
@@ -149,6 +241,22 @@ ALTER TABLE ONLY public.companies
 
 ALTER TABLE ONLY public.employees
     ADD CONSTRAINT employees_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: grant_batches grant_batches_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.grant_batches
+    ADD CONSTRAINT grant_batches_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: leave_types leave_types_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.leave_types
+    ADD CONSTRAINT leave_types_pkey PRIMARY KEY (id);
 
 
 --
@@ -181,6 +289,41 @@ CREATE INDEX index_employees_on_manager_id ON public.employees USING btree (mana
 
 
 --
+-- Name: index_grant_batches_on_company_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_grant_batches_on_company_id ON public.grant_batches USING btree (company_id);
+
+
+--
+-- Name: index_grant_batches_on_created_by_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_grant_batches_on_created_by_id ON public.grant_batches USING btree (created_by_id);
+
+
+--
+-- Name: index_grant_batches_on_leave_type_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_grant_batches_on_leave_type_id ON public.grant_batches USING btree (leave_type_id);
+
+
+--
+-- Name: index_leave_types_on_company_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_leave_types_on_company_id ON public.leave_types USING btree (company_id);
+
+
+--
+-- Name: index_leave_types_on_company_id_and_code; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_leave_types_on_company_id_and_code ON public.leave_types USING btree (company_id, code);
+
+
+--
 -- Name: employees fk_rails_0fe1519b79; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -197,11 +340,44 @@ ALTER TABLE ONLY public.employees
 
 
 --
+-- Name: grant_batches fk_rails_29d5d292ee; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.grant_batches
+    ADD CONSTRAINT fk_rails_29d5d292ee FOREIGN KEY (company_id) REFERENCES public.companies(id);
+
+
+--
+-- Name: grant_batches fk_rails_b80b84412e; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.grant_batches
+    ADD CONSTRAINT fk_rails_b80b84412e FOREIGN KEY (created_by_id) REFERENCES public.employees(id);
+
+
+--
+-- Name: leave_types fk_rails_d0481bcf44; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.leave_types
+    ADD CONSTRAINT fk_rails_d0481bcf44 FOREIGN KEY (company_id) REFERENCES public.companies(id);
+
+
+--
+-- Name: grant_batches fk_rails_d4494317b7; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.grant_batches
+    ADD CONSTRAINT fk_rails_d4494317b7 FOREIGN KEY (leave_type_id) REFERENCES public.leave_types(id);
+
+
+--
 -- PostgreSQL database dump complete
 --
 
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261126000002'),
 ('20261126000001');
 
