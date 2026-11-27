@@ -154,6 +154,40 @@ ALTER SEQUENCE public.grant_batches_id_seq OWNED BY public.grant_batches.id;
 
 
 --
+-- Name: holidays; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.holidays (
+    id bigint NOT NULL,
+    date date NOT NULL,
+    name character varying NOT NULL,
+    scope character varying DEFAULT 'national'::character varying NOT NULL,
+    region character varying,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: holidays_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.holidays_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: holidays_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.holidays_id_seq OWNED BY public.holidays.id;
+
+
+--
 -- Name: leave_grants; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -321,6 +355,41 @@ ALTER SEQUENCE public.ledger_entries_id_seq OWNED BY public.ledger_entries.id;
 
 
 --
+-- Name: rule_versions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.rule_versions (
+    id bigint NOT NULL,
+    country character varying DEFAULT 'CL'::character varying NOT NULL,
+    rule_key character varying NOT NULL,
+    strategy character varying NOT NULL,
+    effective_from date NOT NULL,
+    notes character varying,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: rule_versions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.rule_versions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: rule_versions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.rule_versions_id_seq OWNED BY public.rule_versions.id;
+
+
+--
 -- Name: schema_migrations; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -351,6 +420,13 @@ ALTER TABLE ONLY public.grant_batches ALTER COLUMN id SET DEFAULT nextval('publi
 
 
 --
+-- Name: holidays id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.holidays ALTER COLUMN id SET DEFAULT nextval('public.holidays_id_seq'::regclass);
+
+
+--
 -- Name: leave_grants id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -376,6 +452,13 @@ ALTER TABLE ONLY public.leave_types ALTER COLUMN id SET DEFAULT nextval('public.
 --
 
 ALTER TABLE ONLY public.ledger_entries ALTER COLUMN id SET DEFAULT nextval('public.ledger_entries_id_seq'::regclass);
+
+
+--
+-- Name: rule_versions id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.rule_versions ALTER COLUMN id SET DEFAULT nextval('public.rule_versions_id_seq'::regclass);
 
 
 --
@@ -411,6 +494,14 @@ ALTER TABLE ONLY public.grant_batches
 
 
 --
+-- Name: holidays holidays_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.holidays
+    ADD CONSTRAINT holidays_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: leave_grants leave_grants_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -440,6 +531,14 @@ ALTER TABLE ONLY public.leave_types
 
 ALTER TABLE ONLY public.ledger_entries
     ADD CONSTRAINT ledger_entries_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: rule_versions rule_versions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.rule_versions
+    ADD CONSTRAINT rule_versions_pkey PRIMARY KEY (id);
 
 
 --
@@ -490,6 +589,13 @@ CREATE INDEX index_grant_batches_on_created_by_id ON public.grant_batches USING 
 --
 
 CREATE INDEX index_grant_batches_on_leave_type_id ON public.grant_batches USING btree (leave_type_id);
+
+
+--
+-- Name: index_holidays_on_date_and_scope_and_region; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_holidays_on_date_and_scope_and_region ON public.holidays USING btree (date, scope, region);
 
 
 --
@@ -588,6 +694,13 @@ CREATE INDEX index_ledger_entries_on_leave_period_id ON public.ledger_entries US
 --
 
 CREATE UNIQUE INDEX index_ledger_entries_on_reverses_entry_id ON public.ledger_entries USING btree (reverses_entry_id) WHERE (reverses_entry_id IS NOT NULL);
+
+
+--
+-- Name: index_rule_versions_on_country_and_rule_key_and_effective_from; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_rule_versions_on_country_and_rule_key_and_effective_from ON public.rule_versions USING btree (country, rule_key, effective_from);
 
 
 --
@@ -724,6 +837,7 @@ ALTER TABLE ONLY public.leave_periods
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261126000005'),
 ('20261126000004'),
 ('20261126000003'),
 ('20261126000002'),
