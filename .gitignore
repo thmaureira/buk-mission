@@ -9,3 +9,8 @@
 /public/assets
 /coverage
 /storage/*
+
+# Local variables (NGROK_AUTHTOKEN, BASIC_AUTH_*)
+/.env
+/.env.*
+!/.env.example

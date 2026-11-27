@@ -16,6 +16,20 @@ docker compose exec web bundle exec rspec            # tests
 
 No hay login: el selector **"Ver como"** (arriba a la derecha) cambia entre RRHH, jefatura y colaborador.
 
+## Acceso externo con ngrok
+
+La app no tiene login real ("Ver como" permite actuar como RRHH), así que al exponerla conviene activar Basic Auth:
+
+```bash
+cp .env.example .env          # completar BASIC_AUTH_USER / BASIC_AUTH_PASSWORD (y NGROK_AUTHTOKEN si usas la opción B)
+docker compose up -d          # recrea web con las variables de .env
+```
+
+- **Opción A (ngrok instalado localmente):** `ngrok http 3000`
+- **Opción B (contenedor):** `docker compose --profile tunnel up -d` y ver la URL pública en http://localhost:4040
+
+`config/environments/development.rb` acepta los hosts `*.ngrok-free.app`, `*.ngrok-free.dev`, `*.ngrok.app` y `*.ngrok.io`.
+
 ## Mapa de requisitos
 
 | Req | Dónde verlo | Implementación |
