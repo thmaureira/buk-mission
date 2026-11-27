@@ -107,4 +107,17 @@ RSpec.describe "Gestor de vacaciones" do
       expect(result.total).to eq(26)
     end
   end
+
+  describe Vacations::BulkGrant do
+    it "carga un tipo configurable a un grupo con motivo (R10)" do
+      perf = create(:leave_type, company: company, code: "rendimiento", pool: "rendimiento",
+                                 expiration_policy: "relative", expiration_value: "6m")
+      people = create_list(:employee, 3, company: company)
+      batch = described_class.call(leave_type: perf, employees: people, days: 2, granted_on: Date.new(2026, 4, 15),
+                                   reason: "Evaluación Q1", actor: hr)
+      expect(batch.leave_grants.count).to eq(3)
+      expect(batch.leave_grants.pluck(:expires_on).uniq).to eq([Date.new(2026, 10, 15)])
+      expect(LedgerEntry.where(actor: hr).pluck(:reason).uniq).to eq(["Evaluación Q1"])
+    end
+  end
 end
