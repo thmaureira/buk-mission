@@ -1,0 +1,24 @@
+<% content_for :title, "Cargar Excel" %>
+<div class="page-head"><div><h1>Cargar saldo inicial</h1><p>Exporte la planilla de RRHH a CSV.</p></div></div>
+<div class="panel form-panel">
+  <div class="callout">
+    Columnas esperadas: <span class="mono">rut, nombre, legales, progresivas, administrativos, total</span>.
+    Cargar el archivo <strong>no</strong> modifica saldos: primero verá el reporte de diferencias.
+    <br><%= link_to "Descargar ejemplo", "/saldo_inicial_ejemplo.csv" %>
+  </div>
+  <%= form_with url: opening_balance_imports_path, method: :post, multipart: true do %>
+    <div class="field">
+      <label for="file">Archivo CSV</label>
+      <input type="file" id="file" name="file" accept=".csv,text/csv" required>
+    </div>
+    <div class="field" style="max-width: 300px">
+      <label for="cutoff_on">Fecha de corte del Excel</label>
+      <input type="date" id="cutoff_on" name="cutoff_on" value="<%= Date.current.iso8601 %>" required>
+      <span class="hint">Los aniversarios posteriores los carga el sistema.</span>
+    </div>
+    <div class="form-actions">
+      <button class="btn" type="submit">Leer archivo</button>
+      <%= link_to "Cancelar", opening_balance_imports_path, class: "btn btn-ghost" %>
+    </div>
+  <% end %>
+</div>
