@@ -1,0 +1,59 @@
+<% content_for :title, "Métricas de uso" %>
+<div class="page-head">
+  <div><h1>Métricas de uso</h1><p>Cada página vista y cada acción quedan registradas. Un visitante es un navegador (cookie), no una persona; no se guarda la IP.</p></div>
+</div>
+
+<div class="stats">
+  <div class="stat stat-hero"><div class="stat-label">Visitas</div><div class="stat-value"><%= @totals[:visits] %></div><div class="stat-sub">Hoy: <%= @totals[:today] %></div></div>
+  <div class="stat"><div class="stat-label">Visitantes únicos</div><div class="stat-value"><%= @totals[:visitors] %></div><div class="stat-sub">Navegadores distintos</div></div>
+  <div class="stat"><div class="stat-label">Visitas externas</div><div class="stat-value"><%= @totals[:external] %></div><div class="stat-sub">Por el túnel ngrok</div></div>
+  <div class="stat"><div class="stat-label">Acciones</div><div class="stat-value"><%= @totals[:actions] %></div><div class="stat-sub">Registrar, anular, cargar, ejecutar…</div></div>
+</div>
+
+<div class="form-grid" style="gap: 0 26px">
+  <%= card "Visitas por día (últimos #{MetricsController::DAYS} días)" do %>
+    <table class="list-table">
+      <thead><tr><th>Día</th><th>Visitas</th><th class="right">Únicos</th></tr></thead>
+      <tbody>
+        <% @days.each do |day, count, uniques| %>
+          <tr>
+            <td class="nowrap"><%= fdate(day) %></td>
+            <td><span class="metric-bar" style="width: <%= (count * 70.0 / @max_day).round %>%"></span> <%= count %></td>
+            <td class="right"><%= uniques %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+
+  <%= card "Pantallas más vistas" do %>
+    <table class="list-table">
+      <thead><tr><th>Pantalla</th><th class="right">Visitas</th></tr></thead>
+      <tbody>
+        <% @screens.each do |key, count| %>
+          <tr><td><%= screen_label(key) %> <span class="mono muted"><%= key %></span></td><td class="right"><%= count %></td></tr>
+        <% end %>
+        <% if @screens.empty? %><tr class="empty"><td colspan="2">Sin visitas todavía</td></tr><% end %>
+      </tbody>
+    </table>
+    <p class="muted small">Visitas por rol en "Ver como": <%= @roles.map { |role, n| "#{role || 'sin rol'} #{n}" }.join(" · ").presence || "—" %></p>
+  <% end %>
+</div>
+
+<%= card "Últimas solicitudes" do %>
+  <table class="list-table">
+    <thead><tr><th>Fecha</th><th>Visitante</th><th>Ver como</th><th>Solicitud</th><th>Estado</th><th>Origen</th></tr></thead>
+    <tbody>
+      <% @recent.each do |view| %>
+        <tr>
+          <td class="nowrap small"><%= l(view.created_at, format: :short) %></td>
+          <td class="mono"><%= view.visitor_id.first(8) %></td>
+          <td><%= view.actor&.name || "—" %></td>
+          <td class="small"><span class="mono"><%= view.request_method %></span> <%= view.path %></td>
+          <td class="mono"><%= view.status %></td>
+          <td><%= view.external ? badge("ngrok", "info") : badge("local", "neutral") %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>
