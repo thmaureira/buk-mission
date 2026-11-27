@@ -141,6 +141,89 @@ ALTER SEQUENCE public.grant_batches_id_seq OWNED BY public.grant_batches.id;
 
 
 --
+-- Name: leave_grants; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.leave_grants (
+    id bigint NOT NULL,
+    employee_id bigint NOT NULL,
+    leave_type_id bigint NOT NULL,
+    grant_batch_id bigint,
+    period character varying,
+    granted_days numeric(6,2) NOT NULL,
+    remaining_days numeric(6,2) NOT NULL,
+    granted_on date NOT NULL,
+    expires_on date,
+    source character varying NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT leave_grants_granted_positive CHECK ((granted_days > (0)::numeric)),
+    CONSTRAINT leave_grants_remaining_lte_granted CHECK ((remaining_days <= granted_days)),
+    CONSTRAINT leave_grants_remaining_non_negative CHECK ((remaining_days >= (0)::numeric))
+);
+
+
+--
+-- Name: leave_grants_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.leave_grants_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: leave_grants_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.leave_grants_id_seq OWNED BY public.leave_grants.id;
+
+
+--
+-- Name: leave_periods; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.leave_periods (
+    id bigint NOT NULL,
+    employee_id bigint NOT NULL,
+    approver_id bigint NOT NULL,
+    pool character varying DEFAULT 'vacation'::character varying NOT NULL,
+    start_date date NOT NULL,
+    end_date date NOT NULL,
+    business_days numeric(6,2) NOT NULL,
+    approved_at timestamp(6) without time zone NOT NULL,
+    status character varying DEFAULT 'requested'::character varying NOT NULL,
+    note character varying,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT leave_periods_dates_check CHECK ((end_date >= start_date)),
+    CONSTRAINT leave_periods_status_check CHECK (((status)::text = ANY ((ARRAY['requested'::character varying, 'taken'::character varying, 'cancelled'::character varying])::text[])))
+);
+
+
+--
+-- Name: leave_periods_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.leave_periods_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: leave_periods_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.leave_periods_id_seq OWNED BY public.leave_periods.id;
+
+
+--
 -- Name: leave_types; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -213,6 +296,20 @@ ALTER TABLE ONLY public.grant_batches ALTER COLUMN id SET DEFAULT nextval('publi
 
 
 --
+-- Name: leave_grants id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.leave_grants ALTER COLUMN id SET DEFAULT nextval('public.leave_grants_id_seq'::regclass);
+
+
+--
+-- Name: leave_periods id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.leave_periods ALTER COLUMN id SET DEFAULT nextval('public.leave_periods_id_seq'::regclass);
+
+
+--
 -- Name: leave_types id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -249,6 +346,22 @@ ALTER TABLE ONLY public.employees
 
 ALTER TABLE ONLY public.grant_batches
     ADD CONSTRAINT grant_batches_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: leave_grants leave_grants_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.leave_grants
+    ADD CONSTRAINT leave_grants_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: leave_periods leave_periods_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.leave_periods
+    ADD CONSTRAINT leave_periods_pkey PRIMARY KEY (id);
 
 
 --
@@ -310,6 +423,55 @@ CREATE INDEX index_grant_batches_on_leave_type_id ON public.grant_batches USING 
 
 
 --
+-- Name: index_leave_grants_on_employee_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_leave_grants_on_employee_id ON public.leave_grants USING btree (employee_id);
+
+
+--
+-- Name: index_leave_grants_on_employee_id_and_expires_on; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_leave_grants_on_employee_id_and_expires_on ON public.leave_grants USING btree (employee_id, expires_on);
+
+
+--
+-- Name: index_leave_grants_on_grant_batch_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_leave_grants_on_grant_batch_id ON public.leave_grants USING btree (grant_batch_id);
+
+
+--
+-- Name: index_leave_grants_on_leave_type_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_leave_grants_on_leave_type_id ON public.leave_grants USING btree (leave_type_id);
+
+
+--
+-- Name: index_leave_periods_on_approver_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_leave_periods_on_approver_id ON public.leave_periods USING btree (approver_id);
+
+
+--
+-- Name: index_leave_periods_on_employee_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_leave_periods_on_employee_id ON public.leave_periods USING btree (employee_id);
+
+
+--
+-- Name: index_leave_periods_on_employee_id_and_start_date; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_leave_periods_on_employee_id_and_start_date ON public.leave_periods USING btree (employee_id, start_date);
+
+
+--
 -- Name: index_leave_types_on_company_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -332,6 +494,14 @@ ALTER TABLE ONLY public.employees
 
 
 --
+-- Name: leave_grants fk_rails_141c6749ef; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.leave_grants
+    ADD CONSTRAINT fk_rails_141c6749ef FOREIGN KEY (leave_type_id) REFERENCES public.leave_types(id);
+
+
+--
 -- Name: employees fk_rails_15ca1438d5; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -345,6 +515,30 @@ ALTER TABLE ONLY public.employees
 
 ALTER TABLE ONLY public.grant_batches
     ADD CONSTRAINT fk_rails_29d5d292ee FOREIGN KEY (company_id) REFERENCES public.companies(id);
+
+
+--
+-- Name: leave_grants fk_rails_38b49743f7; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.leave_grants
+    ADD CONSTRAINT fk_rails_38b49743f7 FOREIGN KEY (employee_id) REFERENCES public.employees(id);
+
+
+--
+-- Name: leave_grants fk_rails_4150e73b2d; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.leave_grants
+    ADD CONSTRAINT fk_rails_4150e73b2d FOREIGN KEY (grant_batch_id) REFERENCES public.grant_batches(id);
+
+
+--
+-- Name: leave_periods fk_rails_8f6f730b5c; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.leave_periods
+    ADD CONSTRAINT fk_rails_8f6f730b5c FOREIGN KEY (employee_id) REFERENCES public.employees(id);
 
 
 --
@@ -372,12 +566,21 @@ ALTER TABLE ONLY public.grant_batches
 
 
 --
+-- Name: leave_periods fk_rails_ef6e1fa0ca; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.leave_periods
+    ADD CONSTRAINT fk_rails_ef6e1fa0ca FOREIGN KEY (approver_id) REFERENCES public.employees(id);
+
+
+--
 -- PostgreSQL database dump complete
 --
 
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261126000003'),
 ('20261126000002'),
 ('20261126000001');
 
