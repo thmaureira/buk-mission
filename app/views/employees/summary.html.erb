@@ -1,0 +1,37 @@
+<% content_for :title, "#{@employee.name} · Resumen" %>
+<div class="panel">
+  <%= render "profile", employee: @employee %>
+  <div class="tab-body">
+    <div class="stats">
+      <div class="stat stat-hero">
+        <div class="stat-label">Vacaciones disponibles</div>
+        <div class="stat-value"><%= days(@balance.available("vacation"), unit: false) %> <small>días</small></div>
+        <div class="stat-sub">Legales + progresivas</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Solicitadas (no gozadas)</div>
+        <div class="stat-value"><%= days(@balance.requested_days, unit: false) %> <small>días</small></div>
+      </div>
+      <% @balance.available_by_pool.except("vacation").each do |pool, value| %>
+        <div class="stat">
+          <div class="stat-label"><%= LeaveType.pool_label(pool) %></div>
+          <div class="stat-value"><%= days(value, unit: false) %> <small>días</small></div>
+        </div>
+      <% end %>
+    </div>
+
+    <%= card "Antigüedad y reglas aplicadas" do %>
+      <dl class="kv">
+        <dt>Fecha de ingreso</dt><dd><%= l(@employee.hire_date, format: :long) %></dd>
+        <dt>Años con el empleador</dt><dd><%= @employee.years_of_service %></dd>
+        <dt>Antigüedad previa acreditada</dt>
+        <dd><%= @employee.prior_service_months %> meses (<%= [@employee.prior_service_months / 12, 10].min %> años, tope 10)
+          <% if @employee.prior_service_document_ref.present? %><span class="muted small">· respaldo <%= @employee.prior_service_document_ref %></span><% end %></dd>
+        <dt>Próximo aniversario</dt><dd><%= l(@next_anniversary, format: :long) %>: 15 días legales<%= " + #{@progressive_next} progresivos" if @progressive_next.positive? %></dd>
+        <dt>Libro abierto desde</dt>
+        <dd><%= fdate(@employee.ledger_start_on) %>
+          <% if @employee.ledger_opened_on %><%= badge("Saldo migrado desde Excel", "purple") %><% end %></dd>
+      </dl>
+    <% end %>
+  </div>
+</div>

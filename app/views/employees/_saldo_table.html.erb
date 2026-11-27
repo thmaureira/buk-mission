@@ -1,0 +1,29 @@
+<%# Balance table by type, like the one in the Buk profile. Everything comes from summing the ledger. %>
+<div class="table-wrap">
+  <table class="saldo">
+    <thead>
+      <tr>
+        <th>Saldo</th>
+        <% balance.leave_types.each do |type| %><th><%= type.name %></th><% end %>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% Vacations::Balance::ROWS.each do |bucket, label| %>
+        <tr>
+          <td><%= label %></td>
+          <% balance.leave_types.each do |type| %><td><%= days(balance.cell(type, bucket).abs) %></td><% end %>
+          <td><%= days(balance.row_total(bucket).abs) %></td>
+        </tr>
+      <% end %>
+      <tr class="total">
+        <td>(=) Total saldo</td>
+        <% balance.leave_types.each do |type| %><td><%= days(balance.type_total(type)) %></td><% end %>
+        <td><%= days(balance.total) %></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<% if balance.leave_types.empty? %>
+  <p class="muted center">Sin movimientos a esta fecha.</p>
+<% end %>

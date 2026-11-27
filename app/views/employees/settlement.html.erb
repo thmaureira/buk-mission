@@ -1,0 +1,34 @@
+<% content_for :title, "#{@employee.name} · Finiquito" %>
+<div class="panel">
+  <%= render "profile", employee: @employee %>
+  <div class="tab-body">
+    <%= card "Días a pagar en finiquito" do %>
+      <%= form_with url: settlement_employee_path(@employee), method: :get do %>
+        <div class="field" style="max-width: 300px">
+          <label for="termination_on">Fecha de término</label>
+          <input type="date" id="termination_on" name="termination_on" value="<%= @termination_on.iso8601 %>" class="date-input" onchange="this.form.requestSubmit()">
+        </div>
+      <% end %>
+
+      <div class="calc">
+        <div>Saldo disponible (legales + progresivas)<span class="op">Suma del libro al <%= fdate(@result.termination_on) %></span></div>
+        <div class="amount"><%= days(@result.available, precision: 2) %></div>
+
+        <div>(+) Días solicitados no gozados<span class="op">Aprobados con inicio posterior a la fecha de término</span></div>
+        <div class="amount"><%= days(@result.requested_not_taken, precision: 2) %></div>
+
+        <div>(+) Feriado proporcional
+          <span class="op">
+            Desde el último aniversario (<%= fdate(@result.last_anniversary_on) %>): <%= @result.months %> meses y <%= @result.days %> días →
+            1,25 × <%= @result.months %> + 1,25 × <%= @result.days %> / 30 · regla <%= @result.rule %>
+          </span>
+        </div>
+        <div class="amount"><%= days(@result.proportional, precision: 2) %></div>
+
+        <div class="grand">(=) Total días a pagar</div>
+        <div class="amount grand"><%= days(@result.total, precision: 2) %></div>
+      </div>
+      <p class="muted small" style="margin-bottom: 0">El monto en pesos queda fuera de alcance (lo calcula Remuneraciones).</p>
+    <% end %>
+  </div>
+</div>

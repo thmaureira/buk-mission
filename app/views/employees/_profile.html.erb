@@ -1,0 +1,21 @@
+<div class="profile">
+  <div class="profile-top">
+    <span class="avatar"><%= employee.initials %></span>
+    <div>
+      <h1><%= employee.name %></h1>
+      <div class="profile-meta">
+        <span><%= employee.job_title %></span>
+        <span><%= employee.area %></span>
+        <span>RUT <%= employee.rut %></span>
+        <span>Ingreso <%= fdate(employee.hire_date) %></span>
+        <% if employee.manager %><span>Jefe: <%= employee.manager.name %></span><% end %>
+      </div>
+    </div>
+  </div>
+  <nav class="tabs">
+    <%= link_to "Resumen", summary_employee_path(employee), class: ["tab", ("active" if action_name == "summary")] %>
+    <%= link_to "Vacaciones", employee_path(employee), class: ["tab", ("active" if action_name == "show" || controller_name != "employees")] %>
+    <%= link_to "Movimientos", movements_employee_path(employee), class: ["tab", ("active" if action_name == "movements")] %>
+    <%= link_to "Finiquito", settlement_employee_path(employee), class: ["tab", ("active" if action_name == "settlement")] %>
+  </nav>
+</div>
