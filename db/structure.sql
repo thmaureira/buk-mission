@@ -355,6 +355,85 @@ ALTER SEQUENCE public.ledger_entries_id_seq OWNED BY public.ledger_entries.id;
 
 
 --
+-- Name: opening_balance_imports; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.opening_balance_imports (
+    id bigint NOT NULL,
+    company_id bigint NOT NULL,
+    uploaded_by_id bigint NOT NULL,
+    approved_by_id bigint,
+    filename character varying NOT NULL,
+    checksum character varying NOT NULL,
+    cutoff_on date NOT NULL,
+    status character varying DEFAULT 'pending'::character varying NOT NULL,
+    approved_at timestamp(6) without time zone,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: opening_balance_imports_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.opening_balance_imports_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: opening_balance_imports_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.opening_balance_imports_id_seq OWNED BY public.opening_balance_imports.id;
+
+
+--
+-- Name: opening_balance_rows; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.opening_balance_rows (
+    id bigint NOT NULL,
+    opening_balance_import_id bigint NOT NULL,
+    employee_id bigint,
+    row_number integer NOT NULL,
+    rut character varying NOT NULL,
+    employee_name character varying,
+    legal_days numeric(6,2) DEFAULT 0.0 NOT NULL,
+    progressive_days numeric(6,2) DEFAULT 0.0 NOT NULL,
+    administrative_days numeric(6,2) DEFAULT 0.0 NOT NULL,
+    excel_total numeric(6,2),
+    status character varying NOT NULL,
+    messages text,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: opening_balance_rows_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.opening_balance_rows_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: opening_balance_rows_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.opening_balance_rows_id_seq OWNED BY public.opening_balance_rows.id;
+
+
+--
 -- Name: rule_versions; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -455,6 +534,20 @@ ALTER TABLE ONLY public.ledger_entries ALTER COLUMN id SET DEFAULT nextval('publ
 
 
 --
+-- Name: opening_balance_imports id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.opening_balance_imports ALTER COLUMN id SET DEFAULT nextval('public.opening_balance_imports_id_seq'::regclass);
+
+
+--
+-- Name: opening_balance_rows id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.opening_balance_rows ALTER COLUMN id SET DEFAULT nextval('public.opening_balance_rows_id_seq'::regclass);
+
+
+--
 -- Name: rule_versions id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -531,6 +624,22 @@ ALTER TABLE ONLY public.leave_types
 
 ALTER TABLE ONLY public.ledger_entries
     ADD CONSTRAINT ledger_entries_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: opening_balance_imports opening_balance_imports_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.opening_balance_imports
+    ADD CONSTRAINT opening_balance_imports_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: opening_balance_rows opening_balance_rows_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.opening_balance_rows
+    ADD CONSTRAINT opening_balance_rows_pkey PRIMARY KEY (id);
 
 
 --
@@ -697,6 +806,48 @@ CREATE UNIQUE INDEX index_ledger_entries_on_reverses_entry_id ON public.ledger_e
 
 
 --
+-- Name: index_opening_balance_imports_on_approved_by_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_opening_balance_imports_on_approved_by_id ON public.opening_balance_imports USING btree (approved_by_id);
+
+
+--
+-- Name: index_opening_balance_imports_on_company_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_opening_balance_imports_on_company_id ON public.opening_balance_imports USING btree (company_id);
+
+
+--
+-- Name: index_opening_balance_imports_on_company_id_and_checksum; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_opening_balance_imports_on_company_id_and_checksum ON public.opening_balance_imports USING btree (company_id, checksum);
+
+
+--
+-- Name: index_opening_balance_imports_on_uploaded_by_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_opening_balance_imports_on_uploaded_by_id ON public.opening_balance_imports USING btree (uploaded_by_id);
+
+
+--
+-- Name: index_opening_balance_rows_on_employee_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_opening_balance_rows_on_employee_id ON public.opening_balance_rows USING btree (employee_id);
+
+
+--
+-- Name: index_opening_balance_rows_on_opening_balance_import_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_opening_balance_rows_on_opening_balance_import_id ON public.opening_balance_rows USING btree (opening_balance_import_id);
+
+
+--
 -- Name: index_rule_versions_on_country_and_rule_key_and_effective_from; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -759,11 +910,27 @@ ALTER TABLE ONLY public.leave_grants
 
 
 --
+-- Name: opening_balance_rows fk_rails_4f59997452; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.opening_balance_rows
+    ADD CONSTRAINT fk_rails_4f59997452 FOREIGN KEY (employee_id) REFERENCES public.employees(id);
+
+
+--
 -- Name: ledger_entries fk_rails_6048a9a2ae; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.ledger_entries
     ADD CONSTRAINT fk_rails_6048a9a2ae FOREIGN KEY (leave_period_id) REFERENCES public.leave_periods(id);
+
+
+--
+-- Name: opening_balance_imports fk_rails_685b225e9c; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.opening_balance_imports
+    ADD CONSTRAINT fk_rails_685b225e9c FOREIGN KEY (uploaded_by_id) REFERENCES public.employees(id);
 
 
 --
@@ -799,6 +966,14 @@ ALTER TABLE ONLY public.ledger_entries
 
 
 --
+-- Name: opening_balance_imports fk_rails_ca9fb18f0b; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.opening_balance_imports
+    ADD CONSTRAINT fk_rails_ca9fb18f0b FOREIGN KEY (company_id) REFERENCES public.companies(id);
+
+
+--
 -- Name: leave_types fk_rails_d0481bcf44; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -815,11 +990,27 @@ ALTER TABLE ONLY public.grant_batches
 
 
 --
+-- Name: opening_balance_rows fk_rails_e286f69262; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.opening_balance_rows
+    ADD CONSTRAINT fk_rails_e286f69262 FOREIGN KEY (opening_balance_import_id) REFERENCES public.opening_balance_imports(id);
+
+
+--
 -- Name: ledger_entries fk_rails_e6ab26e796; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.ledger_entries
     ADD CONSTRAINT fk_rails_e6ab26e796 FOREIGN KEY (actor_id) REFERENCES public.employees(id);
+
+
+--
+-- Name: opening_balance_imports fk_rails_e9cbf12428; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.opening_balance_imports
+    ADD CONSTRAINT fk_rails_e9cbf12428 FOREIGN KEY (approved_by_id) REFERENCES public.employees(id);
 
 
 --
@@ -837,6 +1028,7 @@ ALTER TABLE ONLY public.leave_periods
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261126000006'),
 ('20261126000005'),
 ('20261126000004'),
 ('20261126000003'),
