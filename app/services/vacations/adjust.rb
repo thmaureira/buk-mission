@@ -1,6 +1,6 @@
 module Vacations
-  # Ajuste manual de RRHH sobre un tipo. Positivo: crea un lote; negativo: descuenta
-  # de los lotes de ese tipo (FEFO). El token del formulario hace idempotente el envío.
+  # Manual HR adjustment on a type. Positive: creates a lot; negative: deducts from
+  # that type's lots (FEFO). The form token makes the submission idempotent.
   class Adjust
     def self.call(**) = new(**).call
 

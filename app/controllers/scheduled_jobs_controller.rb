@@ -1,5 +1,5 @@
-# Los procesos corren solos con Sidekiq-cron; esta pantalla permite ejecutarlos a
-# mano (incluso dos veces) para comprobar que son idempotentes.
+# The jobs run on their own with Sidekiq-cron; this screen runs them by hand
+# (even twice) to show that they are idempotent.
 class ScheduledJobsController < ApplicationController
   before_action :require_hr!
 

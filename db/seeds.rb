@@ -1,8 +1,8 @@
-# Escenario de demo al 26/11/2026:
-#  1. RRHH migra el Excel con corte 31/12/2025 (reporte de diferencias + aprobación).
-#  2. El job de aniversario carga los aniversarios de 2026 (legales + progresivas).
-#  3. Se aprueban vacaciones (pasadas → tomadas, futuras → solicitadas), una anulación y un ajuste.
-#  4. Cargas de tipos configurables (administrativos, rendimiento) y vencimientos.
+# Demo scenario as of 26/11/2026:
+#  1. HR migrates the Excel sheet with cutoff 31/12/2025 (diff report + approval).
+#  2. The anniversary job grants the 2026 anniversaries (legal + progressive).
+#  3. Vacations are approved (past → taken, future → requested), plus a cancellation and an adjustment.
+#  4. Grants of configurable types (administrative, performance) and expirations.
 if Company.exists?
   puts "Ya hay datos; use bin/rails db:seed:replant para recargar"
   return
@@ -12,7 +12,7 @@ today = Date.current
 ActiveRecord::Base.transaction do
 company = Company.create!(name: "Tellin SpA", country: "CL")
 
-# ---------- Tipos ----------
+# ---------- Types ----------
 types = {
   legal: { name: "Legales", pool: "vacation", grant_mode: "rule", expiration_policy: "relative", expiration_value: "2y", system: true, position: 1 },
   progressive: { name: "Progresivas", pool: "vacation", grant_mode: "rule", expiration_policy: "relative", expiration_value: "2y", system: true, position: 2 },
@@ -20,13 +20,13 @@ types = {
   rendimiento: { name: "Días por rendimiento", pool: "rendimiento", grant_mode: "manual", expiration_policy: "relative", expiration_value: "6m", position: 10 }
 }.to_h { |code, attrs| [code, company.leave_types.create!(attrs.merge(code: code.to_s))] }
 
-# ---------- Reglas versionadas ----------
+# ---------- Versioned rules ----------
 %w[legal_days progressive_days proportional_days].each do |key|
   RuleVersion.create!(country: "CL", rule_key: key, strategy: VacationRules::Registry::DEFAULTS[key],
                       effective_from: Date.new(2000, 1, 1), notes: "Código del Trabajo, arts. 67, 68 y 73")
 end
 
-# ---------- Feriados nacionales (aprox.) ----------
+# ---------- National holidays (approx.) ----------
 {
   2025 => %w[01-01 04-18 04-19 05-01 05-21 06-20 06-29 07-16 08-15 09-18 09-19 10-12 10-31 11-01 12-08 12-25],
   2026 => %w[01-01 04-03 04-04 05-01 05-21 06-21 06-29 07-16 08-15 09-18 09-19 10-12 10-31 11-01 12-08 12-25],
@@ -40,7 +40,7 @@ end
   dates.each_with_index { |d, i| Holiday.create!(date: Date.parse("#{year}-#{d}"), name: names[i]) }
 end
 
-# ---------- Colaboradores ----------
+# ---------- Employees ----------
 emp = ->(attrs) { company.employees.create!(attrs) }
 ana = emp.(first_name: "Ana", last_name: "Rojas", rut: "12.345.678-5", role: "hr", area: "Personas", job_title: "Jefa de Personas", hire_date: Date.new(2018, 3, 1))
 pedro = emp.(first_name: "Pedro", last_name: "Soto", rut: "9.876.543-2", role: "manager", area: "Operaciones", job_title: "Gerente de Operaciones", hire_date: Date.new(2012, 5, 14), prior_service_months: 126, prior_service_document_ref: "Certificado AFP #4411")
@@ -51,7 +51,7 @@ matias = emp.(first_name: "Matías", last_name: "Herrera", rut: "10.111.222-3", 
 francisca = emp.(first_name: "Francisca", last_name: "Lagos", rut: "19.283.746-1", area: "Tecnología", job_title: "Diseñadora UX", hire_date: Date.new(2023, 1, 9), manager: javier)
 valentina = emp.(first_name: "Valentina", last_name: "Pérez", rut: "20.111.333-9", area: "Tecnología", job_title: "Desarrolladora", hire_date: Date.new(2026, 3, 2), manager: javier)
 
-# ---------- 1. Migración desde Excel (R6) ----------
+# ---------- 1. Migration from Excel (R6) ----------
 cutoff = Date.new(2025, 12, 31)
 import = OpeningBalances::Parse.call(
   company: company, uploaded_by: ana, cutoff_on: cutoff, filename: "saldo_inicial_2025.csv",
@@ -60,16 +60,16 @@ import = OpeningBalances::Parse.call(
 OpeningBalances::Approve.call(import: import, actor: ana)
 import.update_columns(created_at: Time.zone.local(2026, 1, 2, 10), approved_at: Time.zone.local(2026, 1, 2, 16))
 
-# Una segunda planilla con errores, pendiente de revisión (para ver el reporte de diferencias).
+# A second sheet with errors, pending review (to show the diff report).
 OpeningBalances::Parse.call(
   company: company, uploaded_by: ana, cutoff_on: cutoff, filename: "saldo_inicial_correccion.csv",
   content: Rails.root.join("db/seeds/saldo_inicial_correccion.csv").read
 )
 
-# ---------- 2. Aniversarios 2026 (R2, R3) ----------
+# ---------- 2. 2026 anniversaries (R2, R3) ----------
 company.employees.each { |e| Vacations::AnniversaryGrants.call(employee: e, as_of: today) }
 
-# ---------- 4a. Cargas configurables (R10) ----------
+# ---------- 4a. Configurable grants (R10) ----------
 Vacations::BulkGrant.call(
   leave_type: types[:administrative], employees: company.employees.where("hire_date <= ?", Date.new(2026, 1, 2)).to_a,
   days: 3, granted_on: Date.new(2026, 1, 2), actor: ana, target_description: "Todos los colaboradores",
@@ -80,7 +80,7 @@ Vacations::BulkGrant.call(
   actor: ana, target_description: "Área: Tecnología (evaluación Q1)", reason: "Bono por rendimiento evaluación Q1 2026"
 )
 
-# ---------- 3. Vacaciones aprobadas (R4) ----------
+# ---------- 3. Approved vacations (R4) ----------
 approve = ->(employee, from, to, approved_on, approver: employee.manager || ana, pool: "vacation") do
   Vacations::ApproveRequest.call(employee: employee, start_date: Date.parse(from), end_date: Date.parse(to),
                                  approver: approver, approved_on: Date.parse(approved_on), pool: pool)
@@ -99,11 +99,11 @@ approve.(francisca, "2026-05-08", "2026-05-08", "2026-05-04", pool: "rendimiento
 approve.(matias, "2027-01-04", "2027-01-15", "2026-11-20")
 approve.(matias, "2026-06-01", "2026-06-05", "2026-05-15")
 
-# ---------- Ajuste manual (R9) ----------
+# ---------- Manual adjustment (R9) ----------
 Vacations::Adjust.call(employee: diego, leave_type: types[:legal], days: 1, actor: ana, token: "seed-diego-1",
                        reason: "Corrección: día descontado dos veces en planilla 2025 (comprobante #881)")
 
-# ---------- 4b. Procesos diarios (R4, R11) ----------
+# ---------- 4b. Daily jobs (R4, R11) ----------
 Vacations::MarkTaken.call(as_of: today)
 Vacations::ExpireDue.call(as_of: today)
 

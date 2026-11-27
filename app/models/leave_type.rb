@@ -25,7 +25,7 @@ class LeaveType < ApplicationRecord
   def pool_label = self.class.pool_label(pool)
   def rule? = grant_mode == "rule"
 
-  # Fecha de vencimiento para un lote cargado en `granted_on`.
+  # Expiration date for a lot granted on `granted_on`.
   def expiration_for(granted_on)
     case expiration_policy
     when "none" then nil

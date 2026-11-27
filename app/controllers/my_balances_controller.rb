@@ -1,4 +1,4 @@
-# R7: el colaborador ve sus días disponibles e historial, sin el detalle del cálculo.
+# R7: employees see their available days and history, without the calculation details.
 class MyBalancesController < ApplicationController
   def show
     @employee = current_actor

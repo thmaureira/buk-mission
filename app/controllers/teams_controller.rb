@@ -1,4 +1,4 @@
-# R8: RRHH y la jefatura ven los días tomados por cada colaborador y quién aprobó.
+# R8: HR and managers see the days each employee took and who approved them.
 class TeamsController < ApplicationController
   before_action :require_manager_or_hr!
 

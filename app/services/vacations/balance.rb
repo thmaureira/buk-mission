@@ -1,5 +1,5 @@
 module Vacations
-  # R1: el saldo no se guarda, se calcula sumando el libro a una fecha.
+  # R1: the balance is not stored; it is the sum of the ledger up to a date.
   class Balance
     ROWS = [
       [:accrued, "(+) Acumuladas"],
@@ -29,7 +29,7 @@ module Vacations
       @leave_types ||= entries.map { |e| e.leave_grant.leave_type }.uniq.sort_by { |t| [t.position, t.name] }
     end
 
-    # { leave_type => { bucket => días } }
+    # { leave_type => { bucket => days } }
     def matrix
       @matrix ||= entries.each_with_object(Hash.new { |h, k| h[k] = Hash.new(0) }) do |entry, acc|
         acc[entry.leave_grant.leave_type][bucket_for(entry)] += entry.days
@@ -49,7 +49,7 @@ module Vacations
       leave_types.group_by(&:pool).transform_values { |types| types.sum { |t| type_total(t) } }
     end
 
-    # Días aprobados aún no gozados a la fecha (R1 "solicitados").
+    # Approved days not taken yet as of the date (R1 "requested").
     def requested_days(pool = "vacation")
       -leave_types.select { |t| t.pool == pool }.sum { |t| cell(t, :future) }
     end

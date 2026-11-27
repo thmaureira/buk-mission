@@ -1,7 +1,7 @@
 class CreateLeaveGrantsAndPeriods < ActiveRecord::Migration[7.2]
   def change
-    # Lotes: cada carga de días. remaining_days es una caché del libro que solo
-    # modifican los service objects dentro de la misma transacción que el movimiento.
+    # Lots: each grant of days. remaining_days caches the ledger and only the service
+    # objects change it, in the same transaction as the entry.
     create_table :leave_grants do |t|
       t.references :employee, null: false, foreign_key: true
       t.references :leave_type, null: false, foreign_key: true

@@ -1,6 +1,6 @@
 module Ledger
-  # Única puerta para cargar días: crea el lote y su movimiento en una transacción.
-  # Idempotente por idempotency_key (índice único): correr dos veces no carga doble.
+  # The only way to grant days: creates the lot and its entry in one transaction.
+  # Idempotent by idempotency_key (unique index): running twice does not grant twice.
   class Grant
     def self.call(**) = new(**).call
 
@@ -39,7 +39,7 @@ module Ledger
         grant
       end
     rescue ActiveRecord::RecordNotUnique
-      # Carrera entre dos procesos: el otro ganó; devolvemos su lote.
+      # Race between two processes: the other one won; return its lot.
       LedgerEntry.find_by!(idempotency_key: @idempotency_key).leave_grant
     end
   end

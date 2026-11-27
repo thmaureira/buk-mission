@@ -1,6 +1,6 @@
 module OpeningBalances
-  # R6 (paso 2): RRHH aprueba el reporte y se crean los movimientos de apertura.
-  # Cada lote apunta a la fila exacta del Excel de la que salió (source).
+  # R6 (step 2): HR approves the report and the opening entries are created.
+  # Each lot points to the exact Excel row it came from (source).
   class Approve
     COLUMNS = { legal_days: "legal", progressive_days: "progressive", administrative_days: "administrative" }.freeze
 
@@ -45,8 +45,8 @@ module OpeningBalances
       employee.update!(ledger_opened_on: cutoff)
     end
 
-    # Supuesto: el saldo legal de apertura se trata como períodos ya acumulados y
-    # vence un año después del próximo aniversario (cuando entraría un tercer período).
+    # Assumption: the opening legal balance counts as already accumulated periods and
+    # expires one year after the next anniversary (when a third period would come in).
     def expiration(type, employee, cutoff)
       return type.expiration_for(cutoff) unless type.pool == "vacation"
 

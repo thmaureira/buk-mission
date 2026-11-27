@@ -19,7 +19,7 @@ class Employee < ApplicationRecord
   def hr? = role == "hr"
   def manager? = role == "manager"
 
-  # Fecha desde la que el libro es la fuente de verdad (después de la migración).
+  # Date from which the ledger is the source of truth (after the Excel migration).
   def ledger_start_on = ledger_opened_on || hire_date
 
   def years_of_service(on: Date.current)
@@ -28,7 +28,7 @@ class Employee < ApplicationRecord
     [years, 0].max
   end
 
-  # Aniversarios (1°, 2°, ...) entre dos fechas, inclusive.
+  # Anniversaries (1st, 2nd, ...) between two dates, inclusive.
   def anniversaries_between(from, to)
     (1..).lazy.map { |n| [n, hire_date.next_year(n)] }
                 .take_while { |_, date| date <= to }

@@ -1,5 +1,5 @@
 module Ledger
-  # Vence el saldo restante de un lote. Idempotente por lote.
+  # Expires the remaining days of a lot. Idempotent per lot.
   class Expire
     def self.call(**) = new(**).call
 

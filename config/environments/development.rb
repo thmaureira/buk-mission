@@ -70,6 +70,6 @@ Rails.application.configure do
   # Raise error when a before_action's only/except options reference missing actions.
   config.action_controller.raise_on_missing_callback_actions = true
 
-  # Acceso externo vía ngrok (ver README > "Acceso externo con ngrok").
+  # External access through ngrok (see README > "Acceso externo con ngrok").
   config.hosts += [ ".ngrok-free.app", ".ngrok-free.dev", ".ngrok.app", ".ngrok.io" ]
 end

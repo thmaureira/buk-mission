@@ -1,6 +1,6 @@
 module VacationRules
-  # Feriado proporcional (finiquito): 1,25 × meses + 1,25 × días / 30 desde el
-  # último aniversario, solo sobre los 15 días legales.
+  # Proportional vacation (settlement): 1.25 × months + 1.25 × days / 30 since the
+  # last anniversary, on the 15 legal days only.
   class ProportionalDaysV1
     DAYS_PER_MONTH = BigDecimal("1.25")
 

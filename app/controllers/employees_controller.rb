@@ -13,15 +13,15 @@ class EmployeesController < ApplicationController
     @areas = current_company.employees.distinct.order(:area).pluck(:area).compact
   end
 
-  # Pestaña Vacaciones (como en Buk): saldo a una fecha, períodos y lotes.
+  # Vacations tab (as in Buk): balance as of a date, periods and lots.
   def show
     @employee = find_employee
     @as_of = parse_date(params[:as_of])
     @balance = Vacations::Balance.new(@employee, as_of: @as_of)
-    # R1: proporcional devengado desde el último aniversario (aún no cargado).
+    # R1: proportional days accrued since the last anniversary (not granted yet).
     @proportional = VacationRules::Registry.resolve(:proportional_days, on: @as_of)
                                            .days(employee: @employee, on: @as_of)
-    # Aniversarios entre hoy y la fecha consultada que el job todavía no carga en el libro.
+    # Anniversaries between today and the requested date that the job has not written to the ledger yet.
     @pending_grants = Vacations::AnniversaryGrants.pending(employee: @employee, as_of: @as_of)
     @periods = @employee.leave_periods.includes(:approver).chronological
     @grants = @employee.leave_grants.includes(:leave_type, :grant_batch, :ledger_entries)
@@ -36,7 +36,7 @@ class EmployeesController < ApplicationController
                                                .days(employee: @employee, anniversary_on: @next_anniversary)
   end
 
-  # R9: todos los movimientos, con quién, cuándo y por qué.
+  # R9: every movement, with who, when and why.
   def movements
     @employee = find_employee
     @entries = LedgerEntry.joins(:leave_grant).where(leave_grants: { employee_id: @employee.id })
@@ -46,7 +46,7 @@ class EmployeesController < ApplicationController
                                     .reject { |g| g.ledger_entries.sum(&:days) == g.remaining_days }
   end
 
-  # R5: simulador de finiquito.
+  # R5: settlement simulator.
   def settlement
     @employee = find_employee
     @termination_on = parse_date(params[:termination_on])

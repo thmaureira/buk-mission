@@ -1,5 +1,5 @@
 module Ledger
-  # Corrección: agrega un movimiento opuesto. Nada se borra ni se edita (R9).
+  # Correction: adds an opposite entry. Nothing is deleted or edited (R9).
   class Reverse
     def self.call(**) = new(**).call
 

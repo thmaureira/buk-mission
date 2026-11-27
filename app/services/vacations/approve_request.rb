@@ -1,7 +1,7 @@
 module Vacations
-  # Punto de integración con el flujo de solicitudes de Buk (fuera de scope):
-  # se llama cuando una solicitud queda aprobada. Cuenta días hábiles y los
-  # descuenta de los lotes; el período queda "solicitado" hasta que llega la fecha.
+  # Integration point with the Buk request flow (out of scope): called when a
+  # request is approved. Counts business days and deducts them from the lots; the
+  # period stays "requested" until its start date.
   class ApproveRequest
     def self.call(**) = new(**).call
 
@@ -24,7 +24,7 @@ module Vacations
       raise Ledger::Error, "El período no tiene días hábiles" if days.zero?
 
       ActiveRecord::Base.transaction do
-        Employee.lock.find(@employee.id) # lock por colaborador
+        Employee.lock.find(@employee.id) # per-employee lock
         if overlapping?
           raise Ledger::Error, "Se superpone con otro período aprobado del colaborador"
         end

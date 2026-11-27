@@ -1,5 +1,5 @@
 /*
- * Estilos del POC, inspirados en la ficha de colaborador de Buk (pestaña Vacaciones).
+ * POC styles, inspired by the Buk employee profile (Vacations tab).
  */
 :root {
   --bg: #eef0f6;
@@ -91,7 +91,7 @@ p { line-height: 1.5; }
 .page-head p { margin: 4px 0 0; color: var(--ink-3); }
 .panel { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); }
 
-/* Ficha del colaborador */
+/* Employee profile */
 .profile { padding: 20px 24px 0; }
 .profile-top { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; }
 .avatar {
@@ -107,7 +107,7 @@ p { line-height: 1.5; }
 .tab.active { color: var(--primary); font-weight: 700; border-bottom-color: var(--primary); }
 .tab-body { padding: 22px 24px 24px; }
 
-/* ---------- Cards (secciones colapsables) ---------- */
+/* ---------- Cards (collapsible sections) ---------- */
 .card {
   background: var(--surface); border-radius: 8px; box-shadow: 0 1px 3px rgba(20,30,70,.12), 0 0 0 1px rgba(20,30,70,.04);
   margin-bottom: 26px; overflow: hidden;

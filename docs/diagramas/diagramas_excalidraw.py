@@ -1,10 +1,10 @@
-"""Genera los diagramas del documento como .excalidraw. Uso: python3 diagramas_excalidraw.py"""
+"""Generates the document diagrams as .excalidraw files. Usage: python3 diagramas_excalidraw.py"""
 from excalidraw_lib import Scene
 from modelo_datos_data import ENTS, COLS
 
 BLUE, YELLOW, GREEN, GRAY, WHITE, VIOLET = "#a5d8ff", "#ffec99", "#b2f2bb", "#e9ecef", "#ffffff", "#d0bfff"
 
-# ---------------------------------------------------------------- modelo de datos
+# ---------------------------------------------------------------- data model
 def modelo_datos():
     s = Scene(); W = 520; RH = 22; HH = 44; gap = 60; X = [0, 700, 1400]
     pos = {}
@@ -50,7 +50,7 @@ def modelo_datos():
     s.rect(1400, ly, 36, 22, bg=BLUE, sw=1); s.text(1448, ly, "núcleo del libro", size=18)
     return s
 
-# ---------------------------------------------------------------- arquitectura
+# ---------------------------------------------------------------- architecture
 def box(s, x, y, w, h, title, body="", bg=WHITE, style="solid", tsize=20, bsize=16):
     s.rect(x, y, w, h, bg=bg, style=style)
     s.text(x + w / 2, y + 14, title, size=tsize, align="center")
@@ -64,7 +64,7 @@ def arquitectura():
     box(s, 0, 120, 1320, 60, "API Rails: controladores, autenticación y permisos por rol")
     s.arrow([(320, 70), (320, 120)]); s.arrow([(1020, 70), (1020, 120)])
     s.arrow([(660, 180), (660, 240)])
-    # módulo
+    # module
     s.rect(0, 240, 1320, 470, bg="#f8f9fa", style="dashed")
     s.text(20, 252, "Módulo de vacaciones (monolito Rails)", size=20)
     box(s, 30, 300, 380, 130, "Solicitudes aprobadas", "períodos tomados y anulados\nconteo de días hábiles")
@@ -78,7 +78,7 @@ def arquitectura():
     s.arrow([(660, 430), (660, 520)], "lee", (672, 485))
     s.arrow([(910, 375), (850, 375)], "calcula", (848, 340))
     s.arrow([(1100, 520), (1100, 475), (800, 475), (800, 430)], "escribe apertura", (880, 445))
-    # externos
+    # external
     s.rect(1400, 240, 420, 220, bg="#f1f3f5", style="dashed")
     s.text(1420, 252, "Módulos existentes de Buk", size=20)
     box(s, 1430, 300, 360, 130, "Colaboradores", "fecha de ingreso\nantigüedad previa con respaldo", bg=GRAY)
@@ -86,12 +86,12 @@ def arquitectura():
     s.rect(1400, 500, 420, 120, bg="#f1f3f5", style="dashed")
     box(s, 1430, 520, 360, 80, "Flujo de solicitudes", "evento: solicitud aprobada", bg=GRAY)
     s.arrow([(1430, 560), (1360, 560), (1360, 495), (150, 495), (150, 430)], "solicitud aprobada", (1150, 500), style="dashed")
-    # procesos
+    # jobs
     box(s, 0, 770, 1320, 90, "Procesos programados (Sidekiq-cron, diarios e idempotentes)", "aniversarios (R2, R3) · vencimientos (R11) · paso a tomadas (R4)", bg=YELLOW)
     s.arrow([(660, 770), (660, 710)], "usan el Motor y escriben en el Libro", (680, 728))
     return s
 
-# ---------------------------------------------------------------- infraestructura
+# ---------------------------------------------------------------- infrastructure
 def infraestructura():
     s = Scene()
     s.rect(200, 0, 1240, 560, bg="#f8f9fa", style="dashed")

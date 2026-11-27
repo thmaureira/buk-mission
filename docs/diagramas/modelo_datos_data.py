@@ -1,4 +1,4 @@
-"""Entidades del modelo de datos (compartido por los generadores)."""
+"""Data model entities (shared by the generators)."""
 ENTS = {
  "employees": ("employees  (existente en Buk)", "#e6e8ee", [("PK","id","bigint"),("FK","company_id","bigint"),("FK","manager_id","bigint"),("","hire_date","date"),("","prior_service_months","int"),("","prior_service_document_ref","string"),("+","ledger_opened_on  (corte Excel)","date"),("","terminated_on","date")]),
  "leave_periods": ("leave_periods  (períodos)", "#ffffff", [("PK","id","bigint"),("FK","employee_id","bigint"),("FK","approver_id","bigint"),("+","pool","string"),("","start_date, end_date","date"),("","business_days","decimal"),("+","approved_at","timestamp"),("+","status  requested|taken|cancelled","string")]),

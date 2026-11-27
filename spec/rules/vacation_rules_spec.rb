@@ -9,19 +9,19 @@ RSpec.describe "Reglas legales (Strategy, funciones puras)" do
     end
 
     it "suma 1 día al 3°, 6° y 9° año con el empleador si hay 10+ años totales" do
-      expect(described_class.calculate(prior_service_months: 120, current_years: 2)).to eq(0) # < 3 continuos
+      expect(described_class.calculate(prior_service_months: 120, current_years: 2)).to eq(0) # < 3 continuous
       expect(described_class.calculate(prior_service_months: 120, current_years: 3)).to eq(1)
       expect(described_class.calculate(prior_service_months: 120, current_years: 6)).to eq(2)
     end
 
     it "no aplica si no se llega a 10 años totales" do
-      expect(described_class.calculate(prior_service_months: 36, current_years: 6)).to eq(0)  # 9 años
-      expect(described_class.calculate(prior_service_months: 36, current_years: 7)).to eq(2)  # 10 años
+      expect(described_class.calculate(prior_service_months: 36, current_years: 6)).to eq(0)  # 9 years
+      expect(described_class.calculate(prior_service_months: 36, current_years: 7)).to eq(2)  # 10 years
     end
 
     it "topa la antigüedad previa en 10 años y usa la parte entera de meses / 12" do
       expect(described_class.calculate(prior_service_months: 240, current_years: 3)).to eq(1)
-      expect(described_class.calculate(prior_service_months: 35, current_years: 7)).to eq(0) # 2 años previos → 9
+      expect(described_class.calculate(prior_service_months: 35, current_years: 7)).to eq(0) # 2 prior years → 9
     end
   end
 
@@ -67,7 +67,7 @@ RSpec.describe "Reglas legales (Strategy, funciones puras)" do
   describe VacationRules::Calendar do
     it "cuenta solo lunes a viernes sin feriados" do
       Holiday.create!(date: Date.new(2026, 12, 25), name: "Navidad")
-      # 21 al 30 de diciembre de 2026: 8 días de semana, menos Navidad
+      # 21 to 30 December 2026: 8 weekdays, minus Christmas
       expect(described_class.business_days(Date.new(2026, 12, 21), Date.new(2026, 12, 30))).to eq(7)
     end
   end

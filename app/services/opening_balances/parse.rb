@@ -2,12 +2,12 @@ require "csv"
 require "digest"
 
 module OpeningBalances
-  # R6 (paso 1): lee el Excel exportado a CSV y genera el reporte de diferencias.
-  # No toca el libro: eso ocurre recién cuando RRHH aprueba (Approve).
-  # Columnas: rut, nombre, legales, progresivas, administrativos, total
+  # R6 (step 1): reads the Excel sheet exported to CSV and builds the diff report.
+  # It does not touch the ledger: that only happens when HR approves (Approve).
+  # Columns: rut, nombre, legales, progresivas, administrativos, total
   class Parse
     HEADERS = %w[rut nombre legales progresivas administrativos total].freeze
-    MAX_LEGAL_ACCUMULATED = 30 # dos períodos
+    MAX_LEGAL_ACCUMULATED = 30 # two periods
 
     def self.call(**) = new(**).call
 
@@ -37,7 +37,7 @@ module OpeningBalances
           checksum: checksum, cutoff_on: @cutoff_on
         )
         seen = Hash.new(0)
-        csv.each.with_index(2) do |row, line| # fila 1 = encabezados
+        csv.each.with_index(2) do |row, line| # row 1 = headers
           import.rows.create!(build_row(row, line, seen))
         end
         import

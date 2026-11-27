@@ -14,7 +14,7 @@ class LeavePeriod < ApplicationRecord
 
   def cancelled? = status == "cancelled"
 
-  # Estado a una fecha dada (la vista permite consultar el saldo a cualquier fecha).
+  # Status as of a given date (the view can show the balance at any date).
   def status_on(date)
     return "cancelled" if cancelled?
     start_date <= date ? "taken" : "requested"

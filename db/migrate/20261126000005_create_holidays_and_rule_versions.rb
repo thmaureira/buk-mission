@@ -9,11 +9,11 @@ class CreateHolidaysAndRuleVersions < ActiveRecord::Migration[7.2]
     end
     add_index :holidays, [:date, :scope, :region], unique: true
 
-    # Strategy: una clase por regla y fecha de vigencia.
+    # Strategy: one class per rule and effective date.
     create_table :rule_versions do |t|
       t.string :country, null: false, default: "CL"
       t.string :rule_key, null: false       # legal_days | progressive_days | proportional_days
-      t.string :strategy, null: false       # nombre de la clase Ruby
+      t.string :strategy, null: false       # Ruby class name
       t.date :effective_from, null: false
       t.string :notes
       t.timestamps

@@ -1,5 +1,5 @@
-# Libro de solo inserción (R9). Además del trigger en la base, el modelo se niega
-# a actualizar o borrar: para corregir se usa Ledger::Reverse.
+# Append-only ledger (R9). Besides the database trigger, the model refuses to
+# update or delete: corrections go through Ledger::Reverse.
 class LedgerEntry < ApplicationRecord
   KINDS = %w[grant usage expiration adjustment reversal].freeze
   KIND_LABELS = {
@@ -26,6 +26,6 @@ class LedgerEntry < ApplicationRecord
   def actor_name = actor&.name || "Sistema"
   def reversible? = kind != "reversal" && reversal.nil?
 
-  # Para agrupar en el saldo, un reverso cuenta en el mismo balde que lo revertido.
+  # For balance grouping, a reversal counts in the same bucket as the entry it reverses.
   def effective_kind = kind == "reversal" ? reverses_entry.effective_kind : kind
 end

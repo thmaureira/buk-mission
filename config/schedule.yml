@@ -1,4 +1,4 @@
-# Procesos diarios (hora Chile). Todos son idempotentes: pueden correr dos veces sin cargar doble.
+# Daily jobs (Chile time). All are idempotent: running twice never grants twice.
 anniversary_grants:
   cron: "5 0 * * * America/Santiago"
   class: "AnniversaryGrantsJob"

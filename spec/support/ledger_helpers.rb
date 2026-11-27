@@ -12,7 +12,7 @@ module LedgerHelpers
                        idempotency_key: key, reason: "test", source: "spec")
   end
 
-  # Invariante central: cada lote cuadra con su libro y el saldo nunca es negativo.
+  # Core invariant: each lot matches its ledger entries and the balance is never negative.
   def expect_ledger_consistent(employee)
     employee.leave_grants.reload.each do |grant|
       expect(grant.ledger_entries.sum(:days)).to eq(grant.remaining_days), "lote #{grant.id} no cuadra"

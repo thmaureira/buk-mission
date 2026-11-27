@@ -36,7 +36,7 @@ module GestorVacaciones
     config.time_zone = "America/Santiago"
     config.i18n.default_locale = :es
     config.i18n.available_locales = [:es]
-    # structure.sql para conservar el trigger de solo inserción del libro.
+    # structure.sql keeps the ledger's append-only trigger.
     config.active_record.schema_format = :sql
     config.active_job.queue_adapter = :sidekiq
     # config.eager_load_paths << Rails.root.join("extras")

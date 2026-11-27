@@ -1,4 +1,4 @@
-# employees ya existe en Buk; aquí se modela solo lo que el módulo de vacaciones lee.
+# employees already exists in Buk; this models only what the vacations module reads.
 class CreateCompaniesAndEmployees < ActiveRecord::Migration[7.2]
   def change
     create_table :companies do |t|
@@ -16,13 +16,13 @@ class CreateCompaniesAndEmployees < ActiveRecord::Migration[7.2]
       t.string :email
       t.string :area
       t.string :job_title
-      # Rol para el POC (autenticación/permisos simplificados): hr | manager | employee
+      # Role for the POC (simplified authentication/permissions): hr | manager | employee
       t.string :role, null: false, default: "employee"
       t.date :hire_date, null: false
       t.integer :prior_service_months, null: false, default: 0
       t.string :prior_service_document_ref
-      # Fecha de corte de la migración desde Excel: el job de aniversario solo carga
-      # aniversarios posteriores a esta fecha (lo anterior viene en el saldo de apertura).
+      # Cutoff date of the Excel migration: the anniversary job only grants anniversaries
+      # after this date (earlier ones are part of the opening balance).
       t.date :ledger_opened_on
       t.date :terminated_on
       t.timestamps

@@ -1,6 +1,6 @@
 module VacationRules
-  # Strategy: resuelve qué clase aplica para una regla según su fecha de vigencia.
-  # Cambiar una regla = agregar una clase y una fila en rule_versions; no se migran datos.
+  # Strategy: resolves which class applies to a rule by its effective date.
+  # Changing a rule = adding a class and a rule_versions row; no data migration.
   class Registry
     DEFAULTS = {
       "legal_days" => "VacationRules::LegalDaysV1",

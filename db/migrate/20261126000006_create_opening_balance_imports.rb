@@ -1,4 +1,4 @@
-# R6: migración del Excel con trazabilidad por fila y aprobación de RRHH.
+# R6: Excel migration with per-row traceability and HR approval.
 class CreateOpeningBalanceImports < ActiveRecord::Migration[7.2]
   def change
     create_table :opening_balance_imports do |t|

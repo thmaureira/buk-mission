@@ -1,5 +1,5 @@
 module Vacations
-  # Anula un período aprobado revirtiendo sus usos (los días vuelven a sus lotes).
+  # Cancels an approved period by reversing its usages (the days return to their lots).
   class CancelRequest
     def self.call(**) = new(**).call
 
@@ -14,7 +14,7 @@ module Vacations
       raise Ledger::Error, "Debe indicar un motivo" if @reason.blank?
 
       ActiveRecord::Base.transaction do
-        Employee.lock.find(@period.employee_id) # lock por colaborador
+        Employee.lock.find(@period.employee_id) # per-employee lock
         @period.ledger_entries.where(kind: "usage").find_each do |entry|
           Ledger::Reverse.call(entry: entry, actor: @actor, reason: "Anulación: #{@reason}")
         end

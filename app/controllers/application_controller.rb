@@ -1,8 +1,8 @@
 class ApplicationController < ActionController::Base
   allow_browser versions: :modern
 
-  # Protección opcional para cuando la app se expone con ngrok: si están definidas
-  # BASIC_AUTH_USER y BASIC_AUTH_PASSWORD se exige HTTP Basic Auth en todas las páginas.
+  # Optional protection for when the app is exposed with ngrok: when BASIC_AUTH_USER
+  # and BASIC_AUTH_PASSWORD are set, every page requires HTTP Basic Auth.
   before_action :basic_auth_for_tunnel, if: -> { ENV["BASIC_AUTH_USER"].present? && ENV["BASIC_AUTH_PASSWORD"].present? }
 
   helper_method :current_actor, :can_view_employee?
@@ -21,7 +21,7 @@ class ApplicationController < ActionController::Base
     )
   end
 
-  # POC: no hay login; el usuario actual se elige con "Ver como" (session[:actor_id]).
+  # POC: there is no login; the current user is picked with "Ver como" (session[:actor_id]).
   def current_actor
     @current_actor ||= Employee.find_by(id: session[:actor_id]) || Employee.find_by(role: "hr")
   end

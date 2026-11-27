@@ -1,15 +1,15 @@
 module Vacations
-  # R2 + R3: en cada aniversario se cargan los 15 días legales y las progresivas.
-  # Recorre todos los aniversarios pendientes hasta `as_of` (si el job no corrió un
-  # día, se pone al día) y es idempotente por colaborador + n° de aniversario.
+  # R2 + R3: on each anniversary, grant the 15 legal days and the progressive days.
+  # Walks every pending anniversary up to `as_of` (if the job missed a day, it catches
+  # up) and is idempotent per employee + anniversary number.
   class AnniversaryGrants
     Planned = Struct.new(:number, :date, :leave_type, :days, :period, :idempotency_key, :reason,
                          keyword_init: true)
 
     def self.call(**) = new(**).call
 
-    # Aniversarios futuros (después de hoy) hasta `as_of` que el job todavía no carga.
-    # Sirve para proyectar saldo y finiquito a una fecha futura sin escribir el libro.
+    # Future anniversaries (after today) up to `as_of` that the job has not granted yet.
+    # Used to project balance and settlement to a future date without writing the ledger.
     def self.pending(employee:, as_of:)
       new(employee: employee, as_of: as_of).plan
         .select { |grant| grant.date > Date.current }

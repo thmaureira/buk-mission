@@ -12,7 +12,7 @@ RSpec.describe "Gestor de vacaciones" do
       Vacations::AnniversaryGrants.call(employee: employee, as_of: Date.new(2026, 11, 26))
       last = employee.leave_grants.where(granted_on: Date.new(2026, 11, 26))
       expect(last.find_by(leave_type: types[:legal]).granted_days).to eq(15)
-      # 10 años previos + 10 actuales → 10 nuevos años → 3 días
+      # 10 prior years + 10 current → 10 new years → 3 days
       expect(last.find_by(leave_type: types[:progressive]).granted_days).to eq(3)
     end
 
@@ -79,17 +79,17 @@ RSpec.describe "Gestor de vacaciones" do
       grant!(employee, types[:administrative], 3, on: Date.new(2026, 1, 2))
       expect(described_class.call(as_of: Date.new(2026, 12, 30))).to be_empty
       described_class.call(as_of: Date.new(2026, 12, 31))
-      described_class.call(as_of: Date.new(2027, 1, 1)) # idempotente
+      described_class.call(as_of: Date.new(2027, 1, 1)) # idempotent
       expiration = LedgerEntry.where(kind: "expiration").sole
       expect(expiration.days).to eq(-3)
       expect(Vacations::Balance.new(employee, as_of: Date.new(2027, 1, 1)).row_total(:expired)).to eq(-3)
     end
 
     it "vence legales al acumularse un tercer período" do
-      Vacations::AnniversaryGrants.call(employee: employee, as_of: Date.new(2023, 3, 2)) # 3 lotes: 2021, 2022, 2023
+      Vacations::AnniversaryGrants.call(employee: employee, as_of: Date.new(2023, 3, 2)) # 3 lots: 2021, 2022, 2023
       described_class.call(as_of: Date.new(2023, 3, 2))
       balance = Vacations::Balance.new(employee, as_of: Date.new(2023, 3, 2))
-      expect(balance.available("vacation")).to eq(30) # máximo dos períodos
+      expect(balance.available("vacation")).to eq(30) # at most two periods
       expect(balance.row_total(:expired)).to eq(-15)
     end
   end

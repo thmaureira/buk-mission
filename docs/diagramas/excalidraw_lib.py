@@ -1,4 +1,4 @@
-"""Mini generador de archivos .excalidraw (abribles y editables en excalidraw.com)."""
+"""Small generator of .excalidraw files (they open and edit in excalidraw.com)."""
 import json, random
 
 class Scene:
@@ -25,7 +25,7 @@ class Scene:
         return el
 
     def text(self, x, y, s, size=20, family=1, align="left", color="#1e1e1e", w=None):
-        # Una línea por elemento: el renderer de @excalidraw/utils 0.1.x desalinea textos multilínea.
+        # One line per element: the @excalidraw/utils 0.1.x renderer misaligns multi-line text.
         if "\n" in s:
             for i, line in enumerate(s.split("\n")):
                 self.text(x, y + i * size * 1.25, line, size, family, align, color, w)
@@ -53,7 +53,7 @@ class Scene:
         return el
 
     def arrow(self, pts, label=None, label_at=None, size=16, style="solid"):
-        # Codos como segmentos rectos: el renderer suaviza las flechas de varios puntos en curvas.
+        # Elbows as straight segments: the renderer smooths multi-point arrows into curves.
         for a, b in zip(pts[:-2], pts[1:-1]):
             self.line([a, b], style=style, sw=2)
         self.line(pts[-2:], style=style, sw=2, arrow=True)

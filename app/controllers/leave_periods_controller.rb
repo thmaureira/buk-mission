@@ -1,5 +1,5 @@
-# Registro de vacaciones aprobadas. En Buk el flujo de solicitud/aprobación ya existe;
-# aquí se simula el evento "solicitud aprobada" que dispara Vacations::ApproveRequest.
+# Records approved vacations. Buk already has the request/approval flow; this
+# simulates the "request approved" event that triggers Vacations::ApproveRequest.
 class LeavePeriodsController < ApplicationController
   before_action :require_hr!
 

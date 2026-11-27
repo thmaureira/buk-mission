@@ -1,5 +1,5 @@
 module VacationRules
-  # Art. 67 CT: 15 días hábiles por cada año de servicio.
+  # Labour Code Art. 67: 15 business days per year of service.
   class LegalDaysV1
     DAYS = 15
 

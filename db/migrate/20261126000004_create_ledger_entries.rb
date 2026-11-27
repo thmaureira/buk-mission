@@ -4,7 +4,7 @@ class CreateLedgerEntries < ActiveRecord::Migration[7.2]
       t.references :leave_grant, null: false, foreign_key: true
       t.references :leave_period, foreign_key: true
       t.references :reverses_entry, foreign_key: { to_table: :ledger_entries }, index: false
-      t.references :actor, foreign_key: { to_table: :employees } # null = Sistema (job)
+      t.references :actor, foreign_key: { to_table: :employees } # null = system (job)
       t.string :kind, null: false
       t.decimal :days, precision: 6, scale: 2, null: false
       t.date :effective_on, null: false
@@ -14,7 +14,7 @@ class CreateLedgerEntries < ActiveRecord::Migration[7.2]
       t.datetime :created_at, null: false, default: -> { "CURRENT_TIMESTAMP" }
     end
     add_index :ledger_entries, :idempotency_key, unique: true
-    # Un movimiento se revierte a lo más una vez.
+    # An entry can be reversed at most once.
     add_index :ledger_entries, :reverses_entry_id, unique: true, where: "reverses_entry_id IS NOT NULL"
     add_check_constraint :ledger_entries,
       "kind IN ('grant','usage','expiration','adjustment','reversal')", name: "ledger_entries_kind_check"
@@ -22,7 +22,7 @@ class CreateLedgerEntries < ActiveRecord::Migration[7.2]
     add_check_constraint :ledger_entries,
       "(kind = 'reversal') = (reverses_entry_id IS NOT NULL)", name: "ledger_entries_reversal_link"
 
-    # R9: nada se borra ni se edita. Se refuerza en la base, no solo en el modelo.
+    # R9: nothing is deleted or edited. Enforced in the database, not only in the model.
     execute <<~SQL
       CREATE FUNCTION ledger_entries_append_only() RETURNS trigger AS $$
       BEGIN

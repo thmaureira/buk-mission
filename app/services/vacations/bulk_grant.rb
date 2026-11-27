@@ -1,5 +1,5 @@
 module Vacations
-  # R10: carga de un tipo configurable a una persona o a un grupo, con motivo.
+  # R10: grants a configurable type to one person or a group, with a reason.
   class BulkGrant
     def self.call(**) = new(**).call
 

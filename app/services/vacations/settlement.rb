@@ -1,6 +1,6 @@
 module Vacations
-  # R5: días a pagar en un finiquito a una fecha de término.
-  # Total = saldo disponible + aniversarios aún no cargados + días solicitados no gozados + proporcional.
+  # R5: days to pay in a settlement on a termination date.
+  # Total = available balance + anniversaries not granted yet + requested days not taken + proportional.
   class Settlement
     Result = Struct.new(:termination_on, :available, :pending_grants, :requested_not_taken, :proportional,
                         :last_anniversary_on, :months, :days, :rule, keyword_init: true) do
@@ -17,7 +17,7 @@ module Vacations
       Result.new(
         termination_on: termination_on,
         available: balance.available("vacation"),
-        # Con término a futuro, el libro todavía no tiene los aniversarios que caen antes del término.
+        # With a future termination date, the ledger does not have the anniversaries before it yet.
         pending_grants: AnniversaryGrants.pending(employee: employee, as_of: termination_on)
                                          .select { |grant| grant.leave_type.pool == "vacation" },
         requested_not_taken: balance.requested_days("vacation"),

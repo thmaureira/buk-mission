@@ -43,8 +43,8 @@ services:
     <<: *app
     command: bundle exec sidekiq -C config/sidekiq.yml
 
-  # Túnel público opcional: docker compose --profile tunnel up -d
-  # Requiere NGROK_AUTHTOKEN en .env (no versionado). URL pública en http://localhost:4040
+  # Optional public tunnel: docker compose --profile tunnel up -d
+  # Needs NGROK_AUTHTOKEN in .env (not committed). Public URL at http://localhost:4040
   ngrok:
     image: ngrok/ngrok:3
     profiles: ["tunnel"]

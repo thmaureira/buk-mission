@@ -1,4 +1,4 @@
-"""Exporta cada .excalidraw a PNG con el renderer oficial (@excalidraw/utils) en Chrome headless."""
+"""Exports each .excalidraw file to PNG with the official renderer (@excalidraw/utils) in headless Chrome."""
 import json, subprocess, sys, pathlib
 CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 PAD = 30
@@ -19,7 +19,7 @@ ExcalidrawUtils.exportToSvg({{elements: doc.elements, appState: {{exportBackgrou
     document.body.appendChild(svg); document.title = w + "x" + h;
   }});
 </script>""")
-    # 1ª pasada: medir el tamaño real del SVG
+    # First pass: measure the real size of the SVG
     dom = subprocess.run([CHROME, "--headless=new", "--disable-gpu", "--virtual-time-budget=8000", "--dump-dom", html.as_uri()],
                          capture_output=True, text=True).stdout
     import re

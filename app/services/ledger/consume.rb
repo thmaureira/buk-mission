@@ -1,6 +1,6 @@
 module Ledger
-  # Descuenta días de los lotes en orden FEFO (primero el que vence antes).
-  # Lock por colaborador para que dos aprobaciones simultáneas no dejen saldo negativo.
+  # Deducts days from lots in FEFO order (the one expiring first goes first).
+  # Per-employee lock so two concurrent approvals cannot leave a negative balance.
   class Consume
     def self.call(**) = new(**).call
 
@@ -22,7 +22,7 @@ module Ledger
       raise Error, "Los días a descontar deben ser mayores a 0" unless @days.positive?
 
       ActiveRecord::Base.transaction(requires_new: true) do
-        Employee.lock.find(@employee.id) # lock por colaborador
+        Employee.lock.find(@employee.id) # per-employee lock
         existing = LedgerEntry.where("idempotency_key LIKE ?", "#{@prefix}:%").to_a
         next existing if existing.any?
 

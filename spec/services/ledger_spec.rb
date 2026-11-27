@@ -40,7 +40,7 @@ RSpec.describe "Libro de vacaciones" do
     end
 
     it "no usa lotes vencidos" do
-      grant!(employee, types[:administrative], 3, on: Date.new(2025, 1, 2)) # vence 31/12/2025
+      grant!(employee, types[:administrative], 3, on: Date.new(2025, 1, 2)) # expires 31/12/2025
       expect do
         Ledger::Consume.call(employee: employee, lots: employee.leave_grants, days: 1, on: Date.new(2026, 1, 5),
                              idempotency_prefix: "u1", reason: "t", source: "spec")

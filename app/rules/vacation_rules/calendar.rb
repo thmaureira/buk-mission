@@ -1,5 +1,5 @@
 module VacationRules
-  # Días hábiles: lunes a viernes, sin feriados nacionales (tabla holidays).
+  # Business days: Monday to Friday, minus national holidays (holidays table).
   class Calendar
     def self.business_days(from, to)
       return 0 if from.nil? || to.nil? || to < from
