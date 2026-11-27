@@ -12,6 +12,10 @@ Rails.application.routes.draw do
       get :movements
       get :settlement
     end
+    resources :leave_periods, only: [:new, :create]
+  end
+  resources :leave_periods, only: [] do
+    member { post :cancel }
   end
   resources :ledger_entries, only: [] do
     member { post :reverse }
