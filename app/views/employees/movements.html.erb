@@ -1,0 +1,47 @@
+<% content_for :title, "#{@employee.name} · Movimientos" %>
+<div class="panel">
+  <%= render "profile", employee: @employee %>
+  <div class="tab-body">
+    <% if @inconsistent_grants.any? %>
+      <div class="callout callout-danger">⚠️ <%= @inconsistent_grants.size %> lote(s) no cuadran con su libro.</div>
+    <% else %>
+      <div class="callout callout-success">✓ Conciliado: el saldo restante de cada lote coincide con la suma de sus movimientos.</div>
+    <% end %>
+
+    <%= card "Libro de movimientos" do %>
+      <p class="muted small" style="margin-top: 0">
+        Solo inserción: los movimientos no se editan ni se borran. Para corregir se agrega un reverso con motivo.
+      </p>
+      <div class="table-wrap">
+        <table class="list-table">
+          <thead>
+            <tr>
+              <th>Registrado</th><th>Fecha efectiva</th><th>Movimiento</th><th>Tipo</th><th class="right">Días</th>
+              <th>Quién</th><th>Motivo</th><th>Origen</th><th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @entries.each do |entry| %>
+              <tr class="<%= 'reversed' if entry.reversal %>">
+                <td class="nowrap small"><%= l(entry.created_at, format: :short) %></td>
+                <td class="nowrap"><%= fdate(entry.effective_on) %></td>
+                <td><%= kind_badge(entry) %></td>
+                <td class="nowrap"><%= entry.leave_grant.leave_type.name %></td>
+                <td class="right nowrap"><%= signed_days(entry.days) %></td>
+                <td class="nowrap"><%= entry.actor_name %></td>
+                <td class="small"><%= entry.reason %>
+                  <% if entry.reverses_entry %><div class="muted">Revierte movimiento #<%= entry.reverses_entry_id %></div><% end %>
+                  <% if entry.reversal %><div class="muted">Revertido por #<%= entry.reversal.id %></div><% end %>
+                </td>
+                <td><span class="mono" title="<%= entry.idempotency_key %>"><%= entry.source %></span></td>
+                <td>
+                </td>
+              </tr>
+            <% end %>
+            <% if @entries.empty? %><tr><td colspan="9" class="center muted">Sin movimientos</td></tr><% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+  </div>
+</div>

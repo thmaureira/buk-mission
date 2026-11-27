@@ -1,3 +1,16 @@
 Rails.application.routes.draw do
+  root "home#index"
   get "up" => "rails/health#show", as: :rails_health_check
+
+  # POC: selector "Ver como" para probar los permisos por rol.
+  resource :session, only: :update
+
+  # RRHH: seguimiento de saldos (R1, R4, R5, R9)
+  resources :employees, only: [:index, :show] do
+    member do
+      get :summary
+      get :movements
+      get :settlement
+    end
+  end
 end

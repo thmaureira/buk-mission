@@ -1,0 +1,58 @@
+<% content_for :title, "Colaboradores" %>
+<div class="page-head">
+  <div>
+    <h1>Colaboradores</h1>
+    <p>Saldo de vacaciones al <%= l(@as_of, format: :long) %>. Cada número se explica movimiento a movimiento.</p>
+  </div>
+</div>
+
+<div class="panel" style="padding: 18px 20px">
+  <%= form_with url: employees_path, method: :get, class: "filters" do %>
+    <input type="text" name="q" value="<%= params[:q] %>" placeholder="Buscar por nombre o RUT" class="input">
+    <select name="area" class="input" onchange="this.form.requestSubmit()">
+      <option value="">Todas las áreas</option>
+      <%= options_for_select(@areas, params[:area]) %>
+    </select>
+    <button class="btn btn-sm" type="submit">Buscar</button>
+  <% end %>
+
+  <div class="table-wrap">
+    <table class="list-table">
+      <thead>
+        <tr>
+          <th>Colaborador</th><th>Área</th><th>Ingreso</th>
+          <th class="right">Vacaciones disponibles</th><th class="right">Solicitadas</th><th class="right">Otros días</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @employees.each do |employee| %>
+          <% balance = @balances[employee] %>
+          <tr>
+            <td>
+              <div class="person">
+                <span class="avatar avatar-xs"><%= employee.initials %></span>
+                <div>
+                  <%= link_to employee.name, employee_path(employee), class: "person-name" %>
+                  <div class="muted small"><%= employee.job_title %> · <%= employee.rut %></div>
+                </div>
+              </div>
+            </td>
+            <td><%= employee.area %></td>
+            <td class="nowrap"><%= fdate(employee.hire_date) %></td>
+            <td class="right strong"><%= days(balance.available("vacation")) %></td>
+            <td class="right"><%= days(balance.requested_days) %></td>
+            <td class="right small">
+              <% balance.available_by_pool.except("vacation").each do |pool, value| %>
+                <div><%= LeaveType.pool_label(pool) %>: <%= days(value) %></div>
+              <% end %>
+            </td>
+            <td class="right">
+              <% if employee.terminated_on %><%= badge("Desvinculado", "muted") %><% end %>
+              <% if employee.ledger_opened_on %><%= badge("Migrado", "purple") %><% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
