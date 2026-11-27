@@ -434,6 +434,43 @@ ALTER SEQUENCE public.opening_balance_rows_id_seq OWNED BY public.opening_balanc
 
 
 --
+-- Name: page_views; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.page_views (
+    id bigint NOT NULL,
+    visitor_id character varying NOT NULL,
+    actor_id bigint,
+    actor_role character varying,
+    request_method character varying NOT NULL,
+    path character varying NOT NULL,
+    controller_action character varying NOT NULL,
+    status integer NOT NULL,
+    external boolean DEFAULT false NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: page_views_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.page_views_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: page_views_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.page_views_id_seq OWNED BY public.page_views.id;
+
+
+--
 -- Name: rule_versions; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -548,6 +585,13 @@ ALTER TABLE ONLY public.opening_balance_rows ALTER COLUMN id SET DEFAULT nextval
 
 
 --
+-- Name: page_views id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.page_views ALTER COLUMN id SET DEFAULT nextval('public.page_views_id_seq'::regclass);
+
+
+--
 -- Name: rule_versions id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -640,6 +684,14 @@ ALTER TABLE ONLY public.opening_balance_imports
 
 ALTER TABLE ONLY public.opening_balance_rows
     ADD CONSTRAINT opening_balance_rows_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: page_views page_views_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.page_views
+    ADD CONSTRAINT page_views_pkey PRIMARY KEY (id);
 
 
 --
@@ -848,6 +900,27 @@ CREATE INDEX index_opening_balance_rows_on_opening_balance_import_id ON public.o
 
 
 --
+-- Name: index_page_views_on_actor_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_page_views_on_actor_id ON public.page_views USING btree (actor_id);
+
+
+--
+-- Name: index_page_views_on_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_page_views_on_created_at ON public.page_views USING btree (created_at);
+
+
+--
+-- Name: index_page_views_on_visitor_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_page_views_on_visitor_id ON public.page_views USING btree (visitor_id);
+
+
+--
 -- Name: index_rule_versions_on_country_and_rule_key_and_effective_from; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -859,6 +932,14 @@ CREATE UNIQUE INDEX index_rule_versions_on_country_and_rule_key_and_effective_fr
 --
 
 CREATE TRIGGER ledger_entries_no_update_delete BEFORE DELETE OR UPDATE ON public.ledger_entries FOR EACH ROW EXECUTE FUNCTION public.ledger_entries_append_only();
+
+
+--
+-- Name: page_views fk_rails_044f66cba4; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.page_views
+    ADD CONSTRAINT fk_rails_044f66cba4 FOREIGN KEY (actor_id) REFERENCES public.employees(id);
 
 
 --
@@ -1028,6 +1109,7 @@ ALTER TABLE ONLY public.leave_periods
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261127000001'),
 ('20261126000006'),
 ('20261126000005'),
 ('20261126000004'),

@@ -1,5 +1,6 @@
 class ApplicationController < ActionController::Base
   allow_browser versions: :modern
+  include TracksPageViews
 
   # Optional protection for when the app is exposed with ngrok: when BASIC_AUTH_USER
   # and BASIC_AUTH_PASSWORD are set, every page requires HTTP Basic Auth.

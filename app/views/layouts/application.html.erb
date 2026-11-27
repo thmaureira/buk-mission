@@ -43,6 +43,7 @@
           <%= nav_link "Cargas", grant_batches_path, icon: "➕", active: controller_name == "grant_batches" %>
           <%= nav_link "Migración Excel", opening_balance_imports_path, icon: "📥", active: controller_name == "opening_balance_imports" %>
           <%= nav_link "Procesos", scheduled_jobs_path, icon: "⚙️" %>
+          <%= nav_link "Métricas de uso", metrics_path, icon: "📊" %>
         <% end %>
         <% if current_actor.hr? || current_actor.manager? %>
           <div class="nav-section">Jefatura</div>
