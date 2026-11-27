@@ -1,0 +1,46 @@
+x-app: &app
+  build:
+    context: .
+    dockerfile: Dockerfile.dev
+  volumes:
+    - .:/app
+    - bundle:/usr/local/bundle
+  environment:
+    DB_HOST: db
+    DB_USER: postgres
+    DB_PASSWORD: postgres
+    REDIS_URL: redis://redis:6379/0
+    TZ: America/Santiago
+  depends_on:
+    db:
+      condition: service_healthy
+    redis:
+      condition: service_started
+
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 2s
+      retries: 20
+
+  redis:
+    image: redis:7
+
+  web:
+    <<: *app
+    ports:
+      - "3000:3000"
+
+  sidekiq:
+    <<: *app
+    command: bundle exec sidekiq -C config/sidekiq.yml
+
+volumes:
+  pgdata:
+  bundle:

@@ -1,0 +1,14 @@
+/.bundle
+/log/*
+!/log/.keep
+/tmp/*
+!/tmp/.keep
+/tmp/pids/*
+!/tmp/pids/.keep
+/config/master.key
+/public/assets
+/coverage
+/storage/*
+
+__pycache__/
+/untitled.excalidraw
