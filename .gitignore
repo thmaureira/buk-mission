@@ -10,4 +10,8 @@
 /coverage
 /storage/*
 
+# Variables locales (NGROK_AUTHTOKEN, BASIC_AUTH_*)
+/.env
+/.env.*
+!/.env.example
 __pycache__/
