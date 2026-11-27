@@ -1,0 +1,61 @@
+<% content_for :title, "Procesos" %>
+<div class="page-head">
+  <div><h1>Procesos programados</h1><p>Corren solos cada noche con Sidekiq-cron. Ejecútelos aquí (incluso dos veces) para comprobar que no cargan doble.</p></div>
+</div>
+<div class="jobs">
+  <% descriptions = {
+       "anniversary_grants" => "Carga 15 días legales + progresivas a quienes cumplen aniversario. Se pone al día si un día no corrió. Clave: aniversario por colaborador.",
+       "expirations" => "Vence administrativos al 31/12 y lotes legales al acumularse un tercer período. El saldo vencido queda como movimiento.",
+       "mark_taken" => "Los períodos aprobados cuya fecha de inicio llegó pasan de solicitados a tomados."
+     } %>
+  <% @jobs.each do |key, (name, req, klass)| %>
+    <div class="panel job">
+      <div><%= badge(req, "info") %></div>
+      <h3><%= name %></h3>
+      <p><%= descriptions[key] %></p>
+      <div class="mono muted"><%= klass %> · diario</div>
+      <%= button_to "Ejecutar ahora", run_scheduled_job_path(key), class: "btn btn-sm" %>
+    </div>
+  <% end %>
+</div>
+
+<%= card "Últimos movimientos generados por procesos" do %>
+  <table class="list-table">
+    <thead><tr><th>Registrado</th><th>Colaborador</th><th>Movimiento</th><th>Tipo</th><th class="right">Días</th><th>Motivo</th><th>Clave idempotente</th></tr></thead>
+    <tbody>
+      <% @recent.each do |entry| %>
+        <tr>
+          <td class="nowrap small"><%= l(entry.created_at, format: :short) %></td>
+          <td><%= link_to entry.leave_grant.employee.name, movements_employee_path(entry.leave_grant.employee) %></td>
+          <td><%= kind_badge(entry) %></td>
+          <td><%= entry.leave_grant.leave_type.name %></td>
+          <td class="right"><%= signed_days(entry.days) %></td>
+          <td class="small"><%= entry.reason %></td>
+          <td class="mono"><%= entry.idempotency_key %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% end %>
+
+<div class="form-grid" style="gap: 0 26px">
+  <%= card "Reglas vigentes (Strategy)" do %>
+    <table class="list-table">
+      <thead><tr><th>Regla</th><th>Clase</th><th>Vigente desde</th></tr></thead>
+      <tbody>
+        <% @rule_versions.each do |rv| %>
+          <tr><td class="mono"><%= rv.rule_key %></td><td class="mono"><%= rv.strategy.demodulize %></td><td><%= fdate(rv.effective_from) %></td></tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+  <%= card "Feriados (no cuentan como hábiles)" do %>
+    <table class="list-table">
+      <tbody>
+        <% @holidays.each do |h| %>
+          <tr><td class="nowrap"><%= fdate(h.date) %></td><td><%= h.name %></td></tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+</div>

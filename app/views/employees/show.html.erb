@@ -1,0 +1,95 @@
+<% content_for :title, "#{@employee.name} · Vacaciones" %>
+<div class="panel">
+  <%= render "profile", employee: @employee %>
+  <div class="tab-body">
+
+    <%= card "Vacaciones" do %>
+      <%= form_with url: employee_path(@employee), method: :get, data: { turbo_frame: "_top" } do %>
+        <input type="date" name="as_of" value="<%= @as_of.iso8601 %>" class="date-input" onchange="this.form.requestSubmit()" aria-label="Saldo a la fecha">
+      <% end %>
+      <div style="height: 22px"></div>
+      <%= render "saldo_table", balance: @balance %>
+      <div class="callout" style="margin: 18px 0 0">
+        <strong>Proporcional devengado: <%= days(@proportional, precision: 2) %></strong>
+        desde el último aniversario (<%= fdate(@employee.last_anniversary_on(@as_of)) %>). No se puede pedir todavía:
+        se carga como 15 días legales en el próximo aniversario o se paga en el <%= link_to "finiquito", settlement_employee_path(@employee, termination_on: @as_of) %>.
+      </div>
+      <p class="muted small" style="margin: 16px 0 0">
+        Saldo al <%= l(@as_of, format: :long) %>. Calculado como la suma de <%= @balance.entries.size %> movimientos del libro;
+        <%= link_to "ver detalle", movements_employee_path(@employee) %>.
+      </p>
+    <% end %>
+
+    <%= card "Vacaciones tomadas", actions: safe_join([
+          link_to("Agregar", new_employee_leave_period_path(@employee), class: "btn")
+        ]) do %>
+      <div class="table-wrap">
+        <table class="grid-table">
+          <thead>
+            <tr><th>Inicio</th><th>Término</th><th>Número de Días</th><th>Tipo</th><th>Estado</th><th>Aprobado por</th><th>Opciones</th></tr>
+          </thead>
+          <tbody>
+            <% @periods.each do |period| %>
+              <tr>
+                <td><%= fdate_dash(period.start_date) %></td>
+                <td><%= fdate_dash(period.end_date) %></td>
+                <td><%= days(period.business_days) %></td>
+                <td><%= LeaveType.pool_label(period.pool) %></td>
+                <td><%= status_badge(period, @as_of) %></td>
+                <td><%= period.approver.name %></td>
+                <td>
+                  <% unless period.cancelled? %>
+                    <%= form_with url: cancel_leave_period_path(period), method: :post, class: "inline-form" do %>
+                      <input type="text" name="reason" placeholder="Motivo de anulación" required>
+                      <button class="btn-link" type="submit">Anular</button>
+                    <% end %>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+            <% if @periods.empty? %><tr class="empty"><td colspan="7">Sin vacaciones registradas</td></tr><% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+
+    <%= card "Vacaciones acumuladas", actions: safe_join([
+          link_to("Ajuste", new_employee_adjustment_path(@employee), class: "btn btn-ghost"),
+          link_to("Agregar", new_grant_batch_path(employee_id: @employee.id), class: "btn")
+        ]) do %>
+      <div class="table-wrap">
+        <table class="grid-table">
+          <thead>
+            <tr><th>Fecha</th><th>Número de días</th><th>Restantes</th><th>Tipo</th><th>Periodo</th><th>Vence</th><th class="left">Origen</th></tr>
+          </thead>
+          <tbody>
+            <% @grants.each do |grant| %>
+              <tr>
+                <td><%= fdate_dash(grant.granted_on) %></td>
+                <td><%= days(grant.granted_days) %></td>
+                <td><%= days(grant.remaining_days) %></td>
+                <td><%= grant.leave_type.name %></td>
+                <td><%= grant.period %></td>
+                <td>
+                  <% if grant.expires_on %>
+                    <%= fdate_dash(grant.expires_on) %>
+                    <% if grant.expired?(@as_of) %><%= badge("Vencido", "warning") %><% end %>
+                  <% else %>—<% end %>
+                </td>
+                <td class="left small">
+                  <% if grant.grant_batch %>
+                    <%= link_to "Carga ##{grant.grant_batch_id}", grant_batch_path(grant.grant_batch) %>
+                  <% else %>
+                    <span class="mono"><%= grant.source %></span>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+            <% if @grants.empty? %><tr class="empty"><td colspan="7">Sin días acumulados</td></tr><% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+
+  </div>
+</div>

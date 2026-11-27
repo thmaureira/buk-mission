@@ -1,0 +1,46 @@
+<% content_for :title, "Mi saldo" %>
+<div class="page-head">
+  <div>
+    <h1>Hola, <%= @employee.first_name %> 👋</h1>
+    <p>Este es tu saldo de vacaciones al <%= l(Date.current, format: :long) %>.</p>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat stat-hero">
+    <div class="stat-label">Días disponibles para pedir</div>
+    <div class="stat-value"><%= days(@balance.available("vacation"), unit: false) %> <small>días hábiles</small></div>
+    <div class="stat-sub">Vacaciones</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">Aprobadas por tomar</div>
+    <div class="stat-value"><%= days(@balance.requested_days, unit: false) %> <small>días</small></div>
+  </div>
+  <% @balance.available_by_pool.except("vacation").each do |pool, value| %>
+    <div class="stat">
+      <div class="stat-label"><%= LeaveType.pool_label(pool) %></div>
+      <div class="stat-value"><%= days(value, unit: false) %> <small>días</small></div>
+    </div>
+  <% end %>
+</div>
+
+<%= card "Mis vacaciones" do %>
+  <div class="table-wrap">
+    <table class="grid-table">
+      <thead><tr><th>Inicio</th><th>Término</th><th>Días hábiles</th><th>Tipo</th><th>Estado</th><th>Aprobado por</th></tr></thead>
+      <tbody>
+        <% @periods.each do |period| %>
+          <tr>
+            <td><%= fdate_dash(period.start_date) %></td>
+            <td><%= fdate_dash(period.end_date) %></td>
+            <td><%= days(period.business_days) %></td>
+            <td><%= LeaveType.pool_label(period.pool) %></td>
+            <td><%= status_badge(period) %></td>
+            <td><%= period.approver.name %></td>
+          </tr>
+        <% end %>
+        <% if @periods.empty? %><tr class="empty"><td colspan="6">Aún no has tomado vacaciones</td></tr><% end %>
+      </tbody>
+    </table>
+  </div>
+<% end %>

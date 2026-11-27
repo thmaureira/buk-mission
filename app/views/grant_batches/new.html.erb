@@ -1,0 +1,57 @@
+<% content_for :title, "Nueva carga" %>
+<% preselected = params[:employee_id].present? %>
+<div class="page-head"><div><h1>Cargar días</h1><p>A una persona o a un grupo, con un motivo. El vencimiento lo define el tipo.</p></div></div>
+<div class="panel form-panel">
+  <%= form_with url: grant_batches_path, method: :post do %>
+    <div class="form-grid">
+      <div class="field">
+        <label for="leave_type_id">Tipo</label>
+        <select name="leave_type_id" id="leave_type_id">
+          <% @leave_types.each do |t| %>
+            <option value="<%= t.id %>" <%= "selected" if t == @selected_type %>><%= t.name %> — <%= t.expiration_description.downcase %></option>
+          <% end %>
+        </select>
+        <span class="hint">Los días legales y progresivos se cargan solos en el aniversario. <%= link_to "Crear tipo", new_leave_type_path %></span>
+      </div>
+      <div class="field">
+        <label for="days">Días por persona</label>
+        <input type="number" step="0.5" min="0.5" id="days" name="days" required>
+      </div>
+      <div class="field">
+        <label for="granted_on">Fecha de carga</label>
+        <input type="date" id="granted_on" name="granted_on" value="<%= Date.current.iso8601 %>" required>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Destinatarios</label>
+      <div class="radio-row">
+        <label><input type="radio" name="target" value="people" <%= "checked" if preselected %>> Personas</label>
+        <label><input type="radio" name="target" value="area"> Un área</label>
+        <label><input type="radio" name="target" value="all" <%= "checked" unless preselected %>> Todos</label>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="field">
+        <label for="area">Área</label>
+        <select name="area" id="area"><%= options_for_select(@areas) %></select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Personas</label>
+      <div class="checklist">
+        <% @employees.each do |e| %>
+          <label><input type="checkbox" name="employee_ids[]" value="<%= e.id %>" <%= "checked" if params[:employee_id].to_s == e.id.to_s %>> <%= e.name %> <span class="muted small"><%= e.area %></span></label>
+        <% end %>
+      </div>
+    </div>
+    <div class="field">
+      <label for="reason">Motivo</label>
+      <textarea id="reason" name="reason" rows="2" required placeholder="Ej: Días administrativos 2026 según reglamento interno"></textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn" type="submit">Cargar</button>
+      <%= link_to "Cancelar", grant_batches_path, class: "btn btn-ghost" %>
+    </div>
+  <% end %>
+</div>

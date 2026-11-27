@@ -1,0 +1,42 @@
+<% content_for :title, "Registrar vacaciones" %>
+<div class="page-head">
+  <div>
+    <h1>Registrar vacaciones aprobadas</h1>
+    <p><%= link_to @employee.name, employee_path(@employee) %> · disponible: <strong><%= days(@balance.available("vacation")) %></strong></p>
+  </div>
+</div>
+<div class="panel form-panel">
+  <div class="callout">
+    En Buk la solicitud y aprobación ya existen; este formulario simula el evento <em>“solicitud aprobada”</em>.
+    Se cuentan solo días hábiles (lunes a viernes sin feriados) y se descuentan de los lotes que vencen antes.
+  </div>
+  <%= form_with url: employee_leave_periods_path(@employee), method: :post do %>
+    <div class="form-grid">
+      <div class="field">
+        <label for="start_date">Inicio</label>
+        <input type="date" id="start_date" name="start_date" required>
+      </div>
+      <div class="field">
+        <label for="end_date">Término</label>
+        <input type="date" id="end_date" name="end_date" required>
+      </div>
+    </div>
+    <div class="field">
+      <label for="pool">Tipo</label>
+      <select name="pool" id="pool">
+        <% @pools.each do |pool| %>
+          <option value="<%= pool %>"><%= LeaveType.pool_label(pool) %> — disponible <%= days(@balance.available(pool)) %></option>
+        <% end %>
+      </select>
+    </div>
+    <div class="field">
+      <label for="note">Comentario (opcional)</label>
+      <input type="text" id="note" name="note">
+      <span class="hint">Aprobador: <%= (@employee.manager || current_actor).name %></span>
+    </div>
+    <div class="form-actions">
+      <button class="btn" type="submit">Registrar</button>
+      <%= link_to "Cancelar", employee_path(@employee), class: "btn btn-ghost" %>
+    </div>
+  <% end %>
+</div>
