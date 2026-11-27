@@ -5,6 +5,35 @@ RSpec.describe "Gestor de vacaciones" do
   let!(:types) { setup_types(company) }
   let(:hr) { create(:employee, company: company, role: "hr") }
 
+  describe Vacations::AnniversaryGrants do
+    let(:employee) { create(:employee, company: company, hire_date: Date.new(2016, 11, 26), prior_service_months: 120) }
+
+    it "carga 15 legales + progresivas en cada aniversario (R2, R3)" do
+      Vacations::AnniversaryGrants.call(employee: employee, as_of: Date.new(2026, 11, 26))
+      last = employee.leave_grants.where(granted_on: Date.new(2026, 11, 26))
+      expect(last.find_by(leave_type: types[:legal]).granted_days).to eq(15)
+      # 10 prior years + 10 current → 10 new years → 3 days
+      expect(last.find_by(leave_type: types[:progressive]).granted_days).to eq(3)
+    end
+
+    it "si corre dos veces no carga doble" do
+      2.times { Vacations::AnniversaryGrants.call(employee: employee, as_of: Date.new(2026, 11, 26)) }
+      expect(employee.leave_grants.where(leave_type: types[:legal]).count).to eq(10)
+    end
+
+    it "si un día no corrió, se pone al día" do
+      Vacations::AnniversaryGrants.call(employee: employee, as_of: Date.new(2024, 1, 1))
+      Vacations::AnniversaryGrants.call(employee: employee, as_of: Date.new(2026, 12, 15))
+      expect(employee.leave_grants.where(leave_type: types[:legal]).pluck(:granted_on).max).to eq(Date.new(2026, 11, 26))
+    end
+
+    it "solo carga aniversarios posteriores al saldo migrado" do
+      employee.update!(ledger_opened_on: Date.new(2025, 12, 31))
+      Vacations::AnniversaryGrants.call(employee: employee, as_of: Date.new(2026, 11, 26))
+      expect(employee.leave_grants.where(leave_type: types[:legal]).count).to eq(1)
+    end
+  end
+
   describe Vacations::ApproveRequest do
     let(:employee) { create(:employee, company: company) }
 
