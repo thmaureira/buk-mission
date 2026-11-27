@@ -13,6 +13,10 @@ gem "bootsnap", require: false
 gem "rails-i18n", "~> 7.0"
 gem "csv"
 
+# Scheduled jobs (anniversaries, expirations, marking periods as taken)
+gem "sidekiq", "~> 7.3"
+gem "sidekiq-cron", "~> 2.0"
+
 group :development, :test do
   gem "debug", platforms: %i[mri windows], require: "debug/prelude"
   gem "rspec-rails", "~> 7.1"
