@@ -13,4 +13,7 @@ Rails.application.routes.draw do
       get :settlement
     end
   end
+  resources :ledger_entries, only: [] do
+    member { post :reverse }
+  end
 end
