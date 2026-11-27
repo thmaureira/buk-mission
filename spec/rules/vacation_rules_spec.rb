@@ -25,6 +25,30 @@ RSpec.describe "Reglas legales (Strategy, funciones puras)" do
     end
   end
 
+  describe VacationRules::ProgressiveDaysV2 do
+    it "no está activa: el registro sigue resolviendo V1" do
+      expect(VacationRules::Registry.resolve(:progressive_days, on: Date.current)).to eq(VacationRules::ProgressiveDaysV1)
+    end
+
+    it "ejemplo del enunciado (3 previos + 9 actuales) debería dar 3 progresivos" do
+      pending "La lectura DT del art. 68 da 0 para el ejemplo del enunciado; esperando respuesta a la consulta"
+      expect(described_class.calculate(prior_service_months: 36, current_years: 9)).to eq(3)
+    end
+
+    it "solo cuenta años nuevos con el empleador después de completar 10 totales" do
+      expect(described_class.calculate(prior_service_months: 36, current_years: 9)).to eq(0)
+      expect(described_class.calculate(prior_service_months: 120, current_years: 3)).to eq(1)
+      expect(described_class.calculate(prior_service_months: 0, current_years: 13)).to eq(1)
+    end
+
+    it "al activarla con una fila en rule_versions, el aniversario la usa sin migrar datos" do
+      RuleVersion.create!(rule_key: "progressive_days", strategy: "VacationRules::ProgressiveDaysV2",
+                          effective_from: Date.new(2027, 1, 1))
+      expect(VacationRules::Registry.resolve(:progressive_days, on: Date.new(2026, 12, 31))).to eq(VacationRules::ProgressiveDaysV1)
+      expect(VacationRules::Registry.resolve(:progressive_days, on: Date.new(2027, 1, 1))).to eq(described_class)
+    end
+  end
+
   describe VacationRules::ProportionalDaysV1 do
     it "caso del enunciado: 8 meses y 24 días = 11 días" do
       expect(described_class.calculate(months: 8, days: 24)).to eq(11)
