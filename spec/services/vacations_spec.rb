@@ -93,4 +93,18 @@ RSpec.describe "Gestor de vacaciones" do
       expect(balance.row_total(:expired)).to eq(-15)
     end
   end
+
+  describe Vacations::Settlement do
+    it "suma saldo disponible + solicitados no gozados + proporcional (R5)" do
+      employee = create(:employee, company: company, hire_date: Date.new(2025, 3, 2))
+      grant!(employee, types[:legal], 15, on: Date.new(2026, 3, 2))
+      Vacations::ApproveRequest.call(employee: employee, start_date: Date.new(2026, 12, 14), end_date: Date.new(2026, 12, 18),
+                                     approver: hr, approved_on: Date.new(2026, 11, 1))
+      result = described_class.call(employee: employee, termination_on: Date.new(2026, 11, 26))
+      expect(result.available).to eq(10)
+      expect(result.requested_not_taken).to eq(5)
+      expect(result.proportional).to eq(11)
+      expect(result.total).to eq(26)
+    end
+  end
 end
