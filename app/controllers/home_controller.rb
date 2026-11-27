@@ -2,8 +2,10 @@ class HomeController < ApplicationController
   def index
     if current_actor.hr?
       redirect_to employees_path
+    elsif current_actor.manager?
+      redirect_to team_path
     else
-      render html: "Las vistas de jefatura y colaborador llegan en un PR siguiente.", layout: true
+      redirect_to my_balance_path
     end
   end
 end

@@ -1,0 +1,49 @@
+<% content_for :title, "Historial del equipo" %>
+<div class="page-head">
+  <div>
+    <h1>Historial del equipo</h1>
+    <p><%= current_actor.hr? ? "Todos los colaboradores" : "Tu equipo directo" %> · días tomados, fechas y quién aprobó.</p>
+  </div>
+</div>
+
+<div class="stats">
+  <% @employees.first(6).each do |employee| %>
+    <div class="stat">
+      <div class="stat-label"><%= employee.name %></div>
+      <div class="stat-value"><%= days(@balances[employee].available("vacation"), unit: false) %> <small>disp.</small></div>
+      <div class="stat-sub"><%= days(@balances[employee].requested_days) %> aprobados por tomar</div>
+    </div>
+  <% end %>
+</div>
+
+<div class="panel" style="padding: 18px 20px">
+  <%= form_with url: team_path, method: :get, class: "filters" do %>
+    <select name="employee_id" class="input" onchange="this.form.requestSubmit()">
+      <option value="">Todo el equipo</option>
+      <%= options_from_collection_for_select(@employees, :id, :name, @employee_filter&.id) %>
+    </select>
+    <select name="year" class="input" onchange="this.form.requestSubmit()">
+      <%= options_for_select((Date.current.year - 3..Date.current.year + 1).to_a.reverse, @year) %>
+    </select>
+  <% end %>
+  <div class="table-wrap">
+    <table class="list-table">
+      <thead><tr><th>Colaborador</th><th>Inicio</th><th>Término</th><th class="right">Días hábiles</th><th>Tipo</th><th>Estado</th><th>Aprobado por</th><th>Aprobado el</th></tr></thead>
+      <tbody>
+        <% @periods.each do |period| %>
+          <tr>
+            <td><div class="person"><span class="avatar avatar-xs"><%= period.employee.initials %></span><span class="person-name"><%= period.employee.name %></span></div></td>
+            <td class="nowrap"><%= fdate(period.start_date) %></td>
+            <td class="nowrap"><%= fdate(period.end_date) %></td>
+            <td class="right"><%= days(period.business_days) %></td>
+            <td><%= LeaveType.pool_label(period.pool) %></td>
+            <td><%= status_badge(period) %></td>
+            <td><%= period.approver.name %></td>
+            <td class="nowrap small"><%= l(period.approved_at, format: :short) %></td>
+          </tr>
+        <% end %>
+        <% if @periods.empty? %><tr><td colspan="8" class="center muted">Sin períodos en <%= @year %></td></tr><% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

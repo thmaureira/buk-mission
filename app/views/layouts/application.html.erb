@@ -40,6 +40,12 @@
           <div class="nav-section">RRHH</div>
           <%= nav_link "Colaboradores", employees_path, icon: "👥", active: controller_name.in?(%w[employees leave_periods adjustments]) %>
         <% end %>
+        <% if current_actor.hr? || current_actor.manager? %>
+          <div class="nav-section">Jefatura</div>
+          <%= nav_link "Historial del equipo", team_path, icon: "📅" %>
+        <% end %>
+        <div class="nav-section">Personal</div>
+        <%= nav_link "Mi saldo", my_balance_path, icon: "🌴" %>
       </nav>
 
       <main class="content">
