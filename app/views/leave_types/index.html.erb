@@ -1,0 +1,32 @@
+<% content_for :title, "Tipos de días" %>
+<div class="page-head">
+  <div>
+    <h1>Tipos de días</h1>
+    <p>Políticas como datos: RRHH crea tipos nuevos y define si vencen y cuándo, sin desarrollo.</p>
+  </div>
+  <%= link_to "Nuevo tipo", new_leave_type_path, class: "btn" %>
+</div>
+<div class="panel" style="padding: 8px 20px">
+  <div class="table-wrap">
+    <table class="list-table">
+      <thead><tr><th>Tipo</th><th>Código</th><th>Bolsa</th><th>Carga</th><th>Vencimiento</th><th class="right">Lotes</th><th class="right">Saldo vigente</th><th></th></tr></thead>
+      <tbody>
+        <% @leave_types.each do |type| %>
+          <% stat = @stats[type.id] || {} %>
+          <tr>
+            <td class="strong"><%= type.name %> <% unless type.active %><%= badge("Inactivo", "muted") %><% end %></td>
+            <td class="mono"><%= type.code %></td>
+            <td><%= type.pool_label %></td>
+            <td><%= type.rule? ? badge("Automática (regla)", "info") : badge("Manual", "neutral") %></td>
+            <td><%= type.expiration_description %></td>
+            <td class="right"><%= stat[:count] || 0 %></td>
+            <td class="right"><%= days(stat[:remaining] || 0) %></td>
+            <td class="right nowrap">
+              <%= link_to "Editar", edit_leave_type_path(type), class: "btn btn-sm btn-ghost" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

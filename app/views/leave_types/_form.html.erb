@@ -1,0 +1,44 @@
+<%= form_with model: leave_type, url: leave_type.persisted? ? leave_type_path(leave_type) : leave_types_path do |f| %>
+  <% if leave_type.errors.any? %>
+    <div class="errors"><%= leave_type.errors.full_messages.to_sentence %></div>
+  <% end %>
+  <% locked = leave_type.system? %>
+  <% if locked %><div class="callout">Tipo legal del sistema: solo se puede cambiar el nombre visible.</div><% end %>
+  <div class="form-grid">
+    <div class="field">
+      <%= f.label :name, "Nombre" %>
+      <%= f.text_field :name, required: true, placeholder: "Ej: Días por rendimiento" %>
+    </div>
+    <div class="field">
+      <%= f.label :code, "Código" %>
+      <%= f.text_field :code, required: true, disabled: leave_type.persisted?, placeholder: "ej: rendimiento" %>
+      <span class="hint">Minúsculas y guion bajo. No se puede cambiar.</span>
+    </div>
+  </div>
+  <% unless leave_type.persisted? %>
+    <div class="field">
+      <%= f.label :pool, "¿De qué bolsa se descuenta al usarlos?" %>
+      <%= f.select :pool, [["Bolsa propia (se pide por separado)", "own"], ["Vacaciones (suma al saldo de vacaciones)", "vacation"], ["Días administrativos", "administrative"]] %>
+    </div>
+  <% end %>
+  <% unless locked %>
+    <div class="form-grid">
+      <div class="field">
+        <%= f.label :expiration_policy, "Vencimiento" %>
+        <%= f.select :expiration_policy, [["No vence", "none"], ["Fecha fija cada año", "fixed_date"], ["Tiempo después de la carga", "relative"]] %>
+      </div>
+      <div class="field">
+        <%= f.label :expiration_value, "Valor" %>
+        <%= f.text_field :expiration_value, placeholder: "12-31  ·  6m  ·  90d  ·  1y" %>
+        <span class="hint">Fecha fija: MM-DD. Relativo: 90d, 6m o 1y.</span>
+      </div>
+    </div>
+    <% if leave_type.persisted? %>
+      <div class="field"><label><%= f.check_box :active %> Activo (disponible para nuevas cargas)</label></div>
+    <% end %>
+  <% end %>
+  <div class="form-actions">
+    <%= f.submit leave_type.persisted? ? "Guardar" : "Crear tipo", class: "btn" %>
+    <%= link_to "Cancelar", leave_types_path, class: "btn btn-ghost" %>
+  </div>
+<% end %>

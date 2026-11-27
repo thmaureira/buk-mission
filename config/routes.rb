@@ -25,4 +25,7 @@ Rails.application.routes.draw do
   # Colaborador y jefatura (R7, R8)
   get "mi-saldo", to: "my_balances#show", as: :my_balance
   get "equipo", to: "teams#show", as: :team
+
+  # Parte 2: tipos configurables y cargas (R10, R11)
+  resources :leave_types, path: "tipos", only: [:index, :new, :create, :edit, :update]
 end
