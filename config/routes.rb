@@ -25,4 +25,7 @@ Rails.application.routes.draw do
   # Employee and manager (R7, R8)
   get "mi-saldo", to: "my_balances#show", as: :my_balance
   get "equipo", to: "teams#show", as: :team
+
+  # Part 2: configurable types and grants (R10, R11)
+  resources :leave_types, path: "tipos", only: [:index, :new, :create, :edit, :update]
 end
