@@ -54,7 +54,8 @@
     <% end %>
 
     <%= card "Vacaciones acumuladas", actions: safe_join([
-          link_to("Ajuste", new_employee_adjustment_path(@employee), class: "btn btn-ghost")
+          link_to("Ajuste", new_employee_adjustment_path(@employee), class: "btn btn-ghost"),
+          link_to("Agregar", new_grant_batch_path(employee_id: @employee.id), class: "btn")
         ]) do %>
       <div class="table-wrap">
         <table class="grid-table">
@@ -76,7 +77,11 @@
                   <% else %>—<% end %>
                 </td>
                 <td class="left small">
-                  <span class="mono"><%= grant.source %></span>
+                  <% if grant.grant_batch %>
+                    <%= link_to "Carga ##{grant.grant_batch_id}", grant_batch_path(grant.grant_batch) %>
+                  <% else %>
+                    <span class="mono"><%= grant.source %></span>
+                  <% end %>
                 </td>
               </tr>
             <% end %>

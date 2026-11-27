@@ -28,4 +28,5 @@ Rails.application.routes.draw do
 
   # Parte 2: tipos configurables y cargas (R10, R11)
   resources :leave_types, path: "tipos", only: [:index, :new, :create, :edit, :update]
+  resources :grant_batches, path: "cargas", only: [:index, :new, :create, :show]
 end
